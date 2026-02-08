@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # ===========================================
+  # Application Server (Development)
+  # ===========================================
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    container_name: linkhub-app-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://linkhub:linkhub_password@db:5432/linkhub?schema=public
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - linkhub-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - uploads:/app/public/uploads
+    command: npm run dev
+
+  # ===========================================
+  # PostgreSQL Database
+  # ===========================================
+  db:
+    image: postgres:16-alpine
+    container_name: linkhub-db-dev
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=linkhub
+      - POSTGRES_PASSWORD=linkhub_password
+      - POSTGRES_DB=linkhub
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+    networks:
+      - linkhub-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U linkhub -d linkhub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # Redis Cache
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: linkhub-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data-dev:/data
+    networks:
+      - linkhub-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # Prisma Studio (Database GUI)
+  # ===========================================
+  prisma-studio:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    container_name: linkhub-prisma-studio
+    ports:
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=postgresql://linkhub:linkhub_password@db:5432/linkhub?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - linkhub-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npx prisma studio
+    profiles:
+      - tools
+
+# ===========================================
+# Volumes
+# ===========================================
+volumes:
+  postgres-data-dev:
+    driver: local
+  redis-data-dev:
+    driver: local
+  uploads:
+    driver: local
+
+# ===========================================
+# Networks
+# ===========================================
+networks:
+  linkhub-network:
+    driver: bridge

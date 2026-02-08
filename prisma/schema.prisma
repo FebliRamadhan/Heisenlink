@@ -1,0 +1,171 @@
+// ===========================================
+// LinkHub - Prisma Schema
+// ===========================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===========================================
+// User Model
+// ===========================================
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  email         String    @unique
+  passwordHash  String?   @map("password_hash")
+  displayName   String?   @map("display_name")
+  avatarUrl     String?   @map("avatar_url")
+  role          Role      @default(USER)
+  isActive      Boolean   @default(true) @map("is_active")
+  ldapDn        String?   @map("ldap_dn")
+  lastLoginAt   DateTime? @map("last_login_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  shortLinks    ShortLink[]
+  bioPage       BioPage?
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+// ===========================================
+// ShortLink Model
+// ===========================================
+model ShortLink {
+  id              String      @id @default(uuid())
+  code            String      @unique
+  destinationUrl  String      @map("destination_url")
+  title           String?
+  userId          String      @map("user_id")
+  startsAt        DateTime?   @map("starts_at")
+  expiresAt       DateTime?   @map("expires_at")
+  passwordHash    String?     @map("password_hash")
+  isActive        Boolean     @default(true) @map("is_active")
+  clickCount      Int         @default(0) @map("click_count")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clickEvents     ClickEvent[]
+
+  @@index([code])
+  @@index([userId])
+  @@map("short_links")
+}
+
+// ===========================================
+// BioPage Model
+// ===========================================
+model BioPage {
+  id            String      @id @default(uuid())
+  userId        String      @unique @map("user_id")
+  slug          String      @unique
+  title         String?
+  bio           String?
+  avatarUrl     String?     @map("avatar_url")
+  theme         String      @default("light")
+  socialLinks   Json?       @map("social_links")
+  isPublished   Boolean     @default(false) @map("is_published")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bioLinks      BioLink[]
+
+  @@index([slug])
+  @@map("bio_pages")
+}
+
+// ===========================================
+// BioLink Model
+// ===========================================
+model BioLink {
+  id            String      @id @default(uuid())
+  bioPageId     String      @map("bio_page_id")
+  title         String
+  url           String
+  icon          String?
+  position      Int         @default(0)
+  isVisible     Boolean     @default(true) @map("is_visible")
+  clickCount    Int         @default(0) @map("click_count")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  bioPage       BioPage     @relation(fields: [bioPageId], references: [id], onDelete: Cascade)
+  clickEvents   ClickEvent[]
+
+  @@index([bioPageId])
+  @@map("bio_links")
+}
+
+// ===========================================
+// ClickEvent Model (Analytics)
+// ===========================================
+model ClickEvent {
+  id            String      @id @default(uuid())
+  shortLinkId   String?     @map("short_link_id")
+  bioLinkId     String?     @map("bio_link_id")
+  linkType      LinkType    @map("link_type")
+  ipAddress     String?     @map("ip_address")
+  userAgent     String?     @map("user_agent")
+  referrer      String?
+  country       String?
+  city          String?
+  deviceType    String?     @map("device_type")
+  browser       String?
+  os            String?
+  clickedAt     DateTime    @default(now()) @map("clicked_at")
+
+  // Relations
+  shortLink     ShortLink?  @relation(fields: [shortLinkId], references: [id], onDelete: Cascade)
+  bioLink       BioLink?    @relation(fields: [bioLinkId], references: [id], onDelete: Cascade)
+
+  @@index([shortLinkId])
+  @@index([bioLinkId])
+  @@index([clickedAt])
+  @@map("click_events")
+}
+
+enum LinkType {
+  SHORTLINK
+  BIOLINK
+}
+
+// ===========================================
+// AuditLog Model
+// ===========================================
+model AuditLog {
+  id            String      @id @default(uuid())
+  userId        String?     @map("user_id")
+  action        String
+  entityType    String      @map("entity_type")
+  entityId      String?     @map("entity_id")
+  oldValues     Json?       @map("old_values")
+  newValues     Json?       @map("new_values")
+  ipAddress     String?     @map("ip_address")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  // Relations
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
