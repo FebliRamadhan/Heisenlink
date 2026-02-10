@@ -1,7 +1,7 @@
 import Link from "next/link"
-import { Ban, ArrowLeft } from "lucide-react"
+import { ShieldAlert, ArrowLeft } from "lucide-react"
 
-export default function LinkInactivePage() {
+export default function TooManyRequestsPage() {
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
             <div className="absolute inset-0 opacity-5">
@@ -13,15 +13,15 @@ export default function LinkInactivePage() {
 
             <div className="relative w-full max-w-lg">
                 <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl text-center">
-                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-red-500/20 mb-6">
-                        <Ban className="h-10 w-10 text-red-400" />
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-orange-500/20 mb-6">
+                        <ShieldAlert className="h-10 w-10 text-orange-400" />
                     </div>
 
                     <h1 className="text-white text-2xl font-bold mb-3">
-                        Link Deactivated
+                        Too Many Requests
                     </h1>
                     <p className="text-slate-400 text-base mb-8">
-                        This link has been deactivated by the owner and is no longer available.
+                        You&apos;ve made too many requests in a short period. Please wait a moment and try again.
                     </p>
 
                     <Link

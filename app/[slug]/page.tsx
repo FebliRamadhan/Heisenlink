@@ -1,73 +1,107 @@
 import { redirect } from "next/navigation"
+import { BioPreview } from "@/components/bio/bio-preview"
+import { ConfirmationPage } from "@/components/public/confirmation-page"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
 
 // This is a Server Component that handles public redirects/bio pages
 export default async function PublicPage({ params }: { params: { slug: string } }) {
     const { slug } = params
 
-    // We need to fetch data from our own API
-    // Since this is server-side, we should use absolute URL 
-    // But wait, the API is on same internal network (localhost:3000)
-    // Or we can use `fetch` to `http://localhost:3000/api/bio/${slug}`
-
+    // 1. Check if it's a bio page first
     try {
-        const res = await fetch(`http://localhost:4000/api/bio/${slug}`, {
-            cache: 'no-store' // Always fresh
+        const res = await fetch(`${API_URL}/api/bio/${slug}`, {
+            cache: 'no-store'
         })
 
         if (res.ok) {
             const data = await res.json()
             const bioPage = data.data
-
-            // Render Bio Page
-            // We can reuse BioPreview components but they are client components
-            // We should create a server-rendered version or use client component
-
             return <PublicBioView bioPage={bioPage} />
         }
     } catch (e) {
-        // Ignore
+        // Not a bio page, continue
     }
 
-    // If not bio page, assume shortlink and redirect to backend handler
-    // The backend handler is at /:code
-    // So we redirect the browser to /api/public/:code? No, /:code is backend route?
-    // Our backend is mounted at /api/*
-    // But we also have public routes at root / in Express if configured?
-    // Let's check `public.routes.js`. It's mounted at `/` in `app.js` likely?
-    // Let's check `src/app.js` later. Assumed it is mounted at root `/`.
-    // If so, Next.js handles `/` layout.
-    // Next.js `rewrites` in `next.config.js` might interfere.
-    // We configured `rewrites` for `/api/*` -> `localhost:3000/api/*`.
-    // We didn't rewrite `/` to backend.
+    // 2. Try to resolve as shortlink
+    try {
+        const res = await fetch(`${API_URL}/${slug}/resolve`, {
+            cache: 'no-store'
+        })
 
-    // So if Next.js catches this route, it means we must handle it.
-    // We can redirect to `http://localhost:3000/${slug}` which is the backend?
-    // But browser calls port 3000 usually?
-    // If we run `dev:server` on 3000 and `dev:next` on 3001 (default separate ports).
-    // Then `rewrites` proxy `/api` to 3000.
-    // If we want backend to handle redirects, we must proxy or redirect.
-    // Redirecting to `API_URL/${slug}` (backend) works.
+        if (res.ok) {
+            const data = await res.json()
+            const linkData = data.data
 
-    // Let's assume Backend runs on 3000 (port from env or default)
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+            // If showConfirmation is enabled, render confirmation page
+            if (linkData.showConfirmation) {
+                return (
+                    <ConfirmationPage
+                        destinationUrl={linkData.destinationUrl}
+                        title={linkData.title}
+                        code={linkData.code}
+                    />
+                )
+            }
 
-    // Redirect to backend for shortlink processing
-    redirect(`${API_URL}/${slug}`)
+            // Direct redirect
+            redirect(linkData.destinationUrl)
+        }
+
+        // Handle error responses
+        if (res.status === 404) {
+            redirect('/not-found')
+        }
+        if (res.status === 410) {
+            // Determine if expired or inactive from error response
+            try {
+                const errorData = await res.json()
+                if (errorData.error?.code === 'EXPIRED') {
+                    redirect('/link-expired')
+                }
+            } catch { }
+            redirect('/link-inactive')
+        }
+        if (res.status === 425) {
+            redirect('/not-found')
+        }
+        if (res.status === 429) {
+            redirect('/too-many-requests')
+        }
+        if (res.status === 401) {
+            // Password protected - redirect to backend for handling
+            redirect(`${API_URL}/${slug}`)
+        }
+    } catch (e) {
+        // Fallback: redirect to backend for legacy handling
+        redirect(`${API_URL}/${slug}`)
+    }
+
+    // Final fallback
+    redirect('/not-found')
 }
 
-import { BioPreview } from "@/components/bio/bio-preview"
-
 function PublicBioView({ bioPage }: { bioPage: any }) {
-    // We can reuse the preview component logic but full screen
-    // We should probably strip the "phone frame" for mobile users
-    // For now, let's reuse a simple view
-
-    // We need themes map again
     const THEMES: Record<string, any> = {
         light: { background: '#ffffff', text: '#1f2937' },
         dark: { background: '#1f2937', text: '#f9fafb' },
         gradient: { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', text: '#ffffff' },
         ocean: { background: 'linear-gradient(135deg, #0077b6 0%, #00b4d8 100%)', text: '#ffffff' },
+        sunset: { background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', text: '#ffffff' },
+        forest: { background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', text: '#ffffff' },
+        midnight: { background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)', text: '#ffffff' },
+        rose: { background: 'linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%)', text: '#1f2937' },
+        neon: { background: '#0a0a0a', text: '#39ff14' },
+        minimal: { background: '#fafafa', text: '#333333' },
+        aurora: { background: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 50%, #7209b7 100%)', text: '#ffffff' },
+        candy: { background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #feada6 100%)', text: '#4a154b' },
+        corporate: { background: '#1a1a2e', text: '#e0e0e0' },
+    }
+
+    const PLATFORM_ICONS: Record<string, string> = {
+        instagram: "📷", twitter: "𝕏", tiktok: "🎵", youtube: "▶️",
+        github: "🐙", linkedin: "💼", facebook: "📘", whatsapp: "💬",
+        telegram: "✈️", email: "📧", website: "🌐", spotify: "🎧",
     }
 
     const theme = THEMES[bioPage.theme] || THEMES.gradient
@@ -88,6 +122,29 @@ function PublicBioView({ bioPage }: { bioPage: any }) {
                     <h1 className="text-3xl font-bold">{bioPage.title}</h1>
                     <p className="text-lg opacity-90">{bioPage.bio}</p>
                 </div>
+
+                {/* Social Links */}
+                {bioPage.socialLinks?.length > 0 && (
+                    <div className="flex flex-wrap gap-3 justify-center">
+                        {bioPage.socialLinks.filter((s: any) => s.url).map((social: any) => (
+                            <a
+                                key={social.platform}
+                                href={social.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-12 h-12 rounded-full flex items-center justify-center text-xl hover:scale-110 transition-transform"
+                                style={{
+                                    background: 'rgba(255, 255, 255, 0.2)',
+                                    backdropFilter: 'blur(10px)',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                }}
+                                title={social.platform}
+                            >
+                                {PLATFORM_ICONS[social.platform] || "🔗"}
+                            </a>
+                        ))}
+                    </div>
+                )}
 
                 <div className="w-full space-y-4">
                     {bioPage.links?.map((link: any) => (
@@ -110,7 +167,7 @@ function PublicBioView({ bioPage }: { bioPage: any }) {
             </div>
 
             <div className="mt-12 text-sm opacity-60">
-                Powered by LinkHub
+                Powered by Heisenlink 🧪
             </div>
         </div>
     )

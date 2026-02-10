@@ -18,7 +18,7 @@ import logger from '../utils/logger.js';
  * @returns {Promise<object>} - Created link
  */
 export const createLink = async (data, userId) => {
-    const { url, alias, title, startsAt, expiresAt, password } = data;
+    const { url, alias, title, startsAt, expiresAt, password, showConfirmation } = data;
 
     // Validate URL
     const destinationUrl = sanitizeUrl(url);
@@ -75,6 +75,7 @@ export const createLink = async (data, userId) => {
             startsAt: startsAt ? new Date(startsAt) : null,
             expiresAt: expiresAt ? new Date(expiresAt) : null,
             passwordHash,
+            showConfirmation: showConfirmation || false,
             isActive: true,
         },
     });
@@ -87,6 +88,7 @@ export const createLink = async (data, userId) => {
         startsAt: link.startsAt,
         expiresAt: link.expiresAt,
         hasPassword: !!link.passwordHash,
+        showConfirmation: link.showConfirmation,
         isActive: link.isActive,
     });
 
@@ -178,9 +180,11 @@ export const getLinkByCode = async (code) => {
             id: true,
             code: true,
             destinationUrl: true,
+            title: true,
             startsAt: true,
             expiresAt: true,
             passwordHash: true,
+            showConfirmation: true,
             isActive: true,
         },
     });
@@ -191,9 +195,11 @@ export const getLinkByCode = async (code) => {
             id: link.id,
             code: link.code,
             destinationUrl: link.destinationUrl,
+            title: link.title,
             startsAt: link.startsAt,
             expiresAt: link.expiresAt,
             hasPassword: !!link.passwordHash,
+            showConfirmation: link.showConfirmation,
             isActive: link.isActive,
         });
     }
@@ -221,7 +227,7 @@ export const updateLink = async (id, data, userId) => {
         throw errors.forbidden('You do not have access to this link');
     }
 
-    const { url, title, startsAt, expiresAt, password, isActive } = data;
+    const { url, title, startsAt, expiresAt, password, showConfirmation, isActive } = data;
     const updateData = {};
 
     if (url !== undefined) {
@@ -235,6 +241,7 @@ export const updateLink = async (id, data, userId) => {
     if (title !== undefined) updateData.title = title;
     if (startsAt !== undefined) updateData.startsAt = startsAt ? new Date(startsAt) : null;
     if (expiresAt !== undefined) updateData.expiresAt = expiresAt ? new Date(expiresAt) : null;
+    if (showConfirmation !== undefined) updateData.showConfirmation = showConfirmation;
     if (isActive !== undefined) updateData.isActive = isActive;
 
     if (password !== undefined) {
@@ -353,8 +360,10 @@ const formatLinkResponse = (link) => ({
     shortUrl: `${config.domains.shortlink}/${link.code}`,
     destinationUrl: link.destinationUrl,
     title: link.title,
+    startsAt: link.startsAt,
     expiresAt: link.expiresAt,
     hasPassword: !!link.passwordHash,
+    showConfirmation: link.showConfirmation,
     isActive: link.isActive,
     clickCount: link.clickCount,
     createdAt: link.createdAt,

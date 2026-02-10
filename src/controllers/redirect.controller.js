@@ -147,7 +147,80 @@ export const verifyAndRedirect = async (req, res, next) => {
     }
 };
 
+/**
+ * Resolve a shortlink without redirecting
+ * Returns link data for the frontend confirmation page
+ * GET /:code/resolve
+ */
+export const resolveLink = async (req, res, next) => {
+    try {
+        const { code } = req.params;
+
+        const link = await linksService.getLinkByCode(code);
+
+        if (!link) {
+            return res.status(404).json({
+                success: false,
+                error: { code: 'NOT_FOUND', message: 'Link not found' },
+            });
+        }
+
+        if (!link.isActive) {
+            return res.status(410).json({
+                success: false,
+                error: { code: 'INACTIVE', message: 'This link has been deactivated' },
+            });
+        }
+
+        if (link.expiresAt && new Date(link.expiresAt) < new Date()) {
+            return res.status(410).json({
+                success: false,
+                error: { code: 'EXPIRED', message: 'This link has expired' },
+            });
+        }
+
+        if (link.startsAt && new Date(link.startsAt) > new Date()) {
+            return res.status(425).json({
+                success: false,
+                error: { code: 'NOT_STARTED', message: 'This link is not yet active' },
+            });
+        }
+
+        if (link.hasPassword || link.passwordHash) {
+            return res.status(401).json({
+                success: false,
+                error: {
+                    code: 'PASSWORD_REQUIRED',
+                    message: 'This link is password protected',
+                    linkId: link.id,
+                },
+            });
+        }
+
+        // Track click for resolve (confirmation page counts as a click)
+        analyticsService.trackClick({
+            linkId: link.id,
+            linkType: 'SHORTLINK',
+            req,
+        });
+        linksService.incrementClickCount(link.id);
+
+        res.json({
+            success: true,
+            data: {
+                code: link.code,
+                destinationUrl: link.destinationUrl,
+                title: link.title,
+                showConfirmation: link.showConfirmation || false,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     redirect,
     verifyAndRedirect,
+    resolveLink,
 };

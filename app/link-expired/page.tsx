@@ -1,7 +1,7 @@
 import Link from "next/link"
-import { Ban, ArrowLeft } from "lucide-react"
+import { Clock, ArrowLeft } from "lucide-react"
 
-export default function LinkInactivePage() {
+export default function LinkExpiredPage() {
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
             <div className="absolute inset-0 opacity-5">
@@ -13,15 +13,15 @@ export default function LinkInactivePage() {
 
             <div className="relative w-full max-w-lg">
                 <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl text-center">
-                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-red-500/20 mb-6">
-                        <Ban className="h-10 w-10 text-red-400" />
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-500/20 mb-6">
+                        <Clock className="h-10 w-10 text-amber-400" />
                     </div>
 
                     <h1 className="text-white text-2xl font-bold mb-3">
-                        Link Deactivated
+                        Link Expired
                     </h1>
                     <p className="text-slate-400 text-base mb-8">
-                        This link has been deactivated by the owner and is no longer available.
+                        This link has expired and is no longer accessible. Please contact the link owner for an updated URL.
                     </p>
 
                     <Link
