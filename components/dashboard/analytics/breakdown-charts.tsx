@@ -62,7 +62,7 @@ export function BreakdownChart({ data, dataKey, title }: BreakdownChartProps) {
                                 ))}
                             </Pie>
                             <Tooltip
-                                formatter={(value: number) => [value, 'Clicks']}
+                                formatter={(value) => [value, 'Clicks']}
                                 contentStyle={{
                                     backgroundColor: "hsl(var(--background))",
                                     border: "1px solid hsl(var(--border))",
