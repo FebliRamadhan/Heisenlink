@@ -11,12 +11,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 
 export function UserNav() {
     const { user, logout } = useAuth()
     const router = useRouter()
+    const queryClient = useQueryClient()
 
     const handleLogout = () => {
+        // Clear all React Query cache (prevents stale data from previous user)
+        queryClient.clear()
+        // Clear auth state
         logout()
         router.push("/login")
     }

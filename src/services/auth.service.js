@@ -67,15 +67,24 @@ export const login = async (username, password, context = {}) => {
         if (ldapUser) {
             logger.info(`User ${username} authenticated via LDAP`);
 
-            // Find or create local user from LDAP
-            user = await prisma.user.findUnique({ where: { username } });
+            // Find existing user by username OR email (avoid unique constraint errors)
+            const ldapEmail = ldapUser.email || `${username}@ldap.local`;
+            user = await prisma.user.findFirst({
+                where: {
+                    OR: [
+                        { username },
+                        { email: ldapEmail },
+                    ],
+                },
+            });
 
             if (user) {
-                // Update existing user with LDAP data
+                // Update existing user with LDAP data + fix username if needed
                 user = await prisma.user.update({
                     where: { id: user.id },
                     data: {
-                        email: ldapUser.email || user.email,
+                        username, // ensure username is without @domain
+                        email: ldapEmail,
                         displayName: ldapUser.displayName || user.displayName,
                         ldapDn: ldapUser.dn || user.ldapDn,
                         lastLoginAt: new Date(),
@@ -86,7 +95,7 @@ export const login = async (username, password, context = {}) => {
                 user = await prisma.user.create({
                     data: {
                         username: ldapUser.username || username,
-                        email: ldapUser.email || `${username}@ldap.local`,
+                        email: ldapEmail,
                         displayName: ldapUser.displayName || username,
                         ldapDn: ldapUser.dn,
                         isActive: true,
