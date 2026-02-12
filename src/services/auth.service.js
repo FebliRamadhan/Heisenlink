@@ -59,6 +59,8 @@ export const login = async (username, password, context = {}) => {
     let user = null;
     let ldapUser = null;
 
+    username = username.includes('@') ? username.split('@')[0] : username;
+
     // Try LDAP authentication first (if enabled)
     try {
         ldapUser = await authenticateLdap(username, password);
@@ -94,7 +96,8 @@ export const login = async (username, password, context = {}) => {
             }
         }
     } catch (ldapErr) {
-        logger.warn(`LDAP auth failed for ${username}: ${ldapErr.message}`);
+        logger.error(`LDAP login failed for ${username}:`, ldapErr);
+        logger.error(`Error details: ${JSON.stringify(ldapErr, Object.getOwnPropertyNames(ldapErr))}`);
         // Fall through to local authentication
     }
 
