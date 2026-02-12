@@ -10,29 +10,34 @@ const API_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL 
 export default async function PublicPage({ params }: { params: { slug: string } }) {
     const { slug } = params
 
+    console.log(`[SLUG] Resolving slug="${slug}", API_URL="${API_URL}"`)
+
     // 1. Check if it's a bio page first
     try {
-        const res = await fetch(`${API_URL}/api/bio/${slug}`, {
-            cache: 'no-store'
-        })
+        const bioUrl = `${API_URL}/api/bio/${slug}`
+        console.log(`[SLUG] Checking bio: ${bioUrl}`)
+        const res = await fetch(bioUrl, { cache: 'no-store' })
+        console.log(`[SLUG] Bio response: ${res.status}`)
 
         if (res.ok) {
             const data = await res.json()
             const bioPage = data.data
             return <PublicBioView bioPage={bioPage} />
         }
-    } catch (e) {
-        // Not a bio page, continue
+    } catch (e: any) {
+        console.log(`[SLUG] Bio check failed: ${e.message}`)
     }
 
     // 2. Try to resolve as shortlink
     try {
-        const res = await fetch(`${API_URL}/${slug}/resolve`, {
-            cache: 'no-store'
-        })
+        const resolveUrl = `${API_URL}/${slug}/resolve`
+        console.log(`[SLUG] Resolving shortlink: ${resolveUrl}`)
+        const res = await fetch(resolveUrl, { cache: 'no-store' })
+        console.log(`[SLUG] Resolve response: ${res.status}`)
 
         if (res.ok) {
             const data = await res.json()
+            console.log(`[SLUG] Resolve data:`, JSON.stringify(data))
             const linkData = data.data
 
             // If showConfirmation is enabled, render confirmation page
