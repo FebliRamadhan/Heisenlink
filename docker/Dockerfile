@@ -1,6 +1,7 @@
 # ===========================================
 # Heisenlink - Production Dockerfile
 # ===========================================
+# syntax=docker/dockerfile:1
 
 FROM node:20-alpine AS base
 RUN apk add --no-cache openssl
@@ -13,8 +14,9 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies with cache
+RUN --mount=type=cache,target=/root/.npm \
+  npm ci --only=production
 
 # Generate Prisma client
 RUN npx prisma generate
@@ -46,8 +48,6 @@ ENV PORT=3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/health || exit 1
 
 CMD ["node", "src/server.js"]
-
-
