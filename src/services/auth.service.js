@@ -122,24 +122,18 @@ export const login = async (username, password, context = {}) => {
 
     // Create Audit Log
     try {
-        console.log('[DEBUG] Attempting to create audit log for user:', user.id);
-        const logData = {
-            userId: user.id,
-            action: 'user.login',
-            entityType: 'USER',
-            entityId: user.id,
-            ipAddress: context.ipAddress || 'unknown',
-            userAgent: context.userAgent,
-            newValues: context.userAgent ? { userAgent: context.userAgent } : undefined
-        };
-        console.log('[DEBUG] Log data:', JSON.stringify(logData));
-
-        const createdLog = await prisma.auditLog.create({
-            data: logData
+        await prisma.auditLog.create({
+            data: {
+                user: { connect: { id: user.id } },
+                action: 'user.login',
+                entityType: 'USER',
+                entityId: user.id,
+                ipAddress: context.ipAddress || 'unknown',
+                newValues: context.userAgent ? { userAgent: context.userAgent } : undefined,
+            }
         });
-        console.log('[DEBUG] Audit log created successfully:', createdLog.id);
+        logger.info(`Login audit log created for user: ${user.id}`);
     } catch (logError) {
-        console.error('[DEBUG] Failed to create login audit log:', logError);
         logger.error('Failed to create login audit log', logError);
     }
 
