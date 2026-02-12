@@ -2,7 +2,9 @@ import { redirect } from "next/navigation"
 import { BioPreview } from "@/components/bio/bio-preview"
 import { ConfirmationPage } from "@/components/public/confirmation-page"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+// SSR must use internal URL (Docker network) to reach backend directly
+// NOT the public URL which routes back through nginx → frontend (loop!)
+const API_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
 
 // This is a Server Component that handles public redirects/bio pages
 export default async function PublicPage({ params }: { params: { slug: string } }) {
@@ -69,12 +71,13 @@ export default async function PublicPage({ params }: { params: { slug: string } 
             redirect('/too-many-requests')
         }
         if (res.status === 401) {
-            // Password protected - redirect to backend for handling
-            redirect(`${API_URL}/${slug}`)
+            // Password protected - show not-found for now
+            // TODO: implement password entry page
+            redirect('/not-found')
         }
     } catch (e) {
-        // Fallback: redirect to backend for legacy handling
-        redirect(`${API_URL}/${slug}`)
+        // API unreachable - show not-found
+        console.error(`[slug] resolve failed for ${slug}:`, e)
     }
 
     // Final fallback
