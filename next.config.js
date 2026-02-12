@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const apiUrl = process.env.INTERNAL_API_URL || 'http://localhost:4000';
+
 const nextConfig = {
     output: 'standalone',
     reactStrictMode: true,
@@ -14,16 +16,16 @@ const nextConfig = {
             },
         ],
     },
-    // Ensure Next.js doesn't conflict with Express API routes
+    // Proxy API requests to backend
     rewrites: async () => {
         return [
             {
                 source: '/api/:path*',
-                destination: 'http://localhost:4000/api/:path*',
+                destination: `${apiUrl}/api/:path*`,
             },
             {
                 source: '/uploads/:path*',
-                destination: 'http://localhost:4000/uploads/:path*',
+                destination: `${apiUrl}/uploads/:path*`,
             },
         ];
     },
