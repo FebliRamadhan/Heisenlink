@@ -59,7 +59,44 @@ export const login = async (username, password, context = {}) => {
     let user = null;
     let ldapUser = null;
 
-    // ... (existing LDAP logic)
+    // Try LDAP authentication first (if enabled)
+    try {
+        ldapUser = await authenticateLdap(username, password);
+        if (ldapUser) {
+            logger.info(`User ${username} authenticated via LDAP`);
+
+            // Find or create local user from LDAP
+            user = await prisma.user.findUnique({ where: { username } });
+
+            if (user) {
+                // Update existing user with LDAP data
+                user = await prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        email: ldapUser.email || user.email,
+                        name: ldapUser.displayName || user.name,
+                        lastLoginAt: new Date(),
+                    },
+                });
+            } else {
+                // Auto-create local user from LDAP
+                user = await prisma.user.create({
+                    data: {
+                        username: ldapUser.username || username,
+                        email: ldapUser.email || `${username}@ldap.local`,
+                        name: ldapUser.displayName || username,
+                        isActive: true,
+                        role: 'USER',
+                        lastLoginAt: new Date(),
+                    },
+                });
+                logger.info(`Auto-created local user from LDAP: ${username}`);
+            }
+        }
+    } catch (ldapErr) {
+        logger.warn(`LDAP auth failed for ${username}: ${ldapErr.message}`);
+        // Fall through to local authentication
+    }
 
     // Fallback to local authentication
     if (!user) {
