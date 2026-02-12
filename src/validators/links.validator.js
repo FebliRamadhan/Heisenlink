@@ -24,14 +24,14 @@ export const createLinkSchema = z.object({
         .optional(),
     startsAt: z
         .string()
-        .datetime()
         .optional()
-        .nullable(),
+        .nullable()
+        .transform(val => val === '' ? null : val),
     expiresAt: z
         .string()
-        .datetime()
         .optional()
-        .nullable(),
+        .nullable()
+        .transform(val => val === '' ? null : val),
     password: z
         .string()
         .min(4, 'Password must be at least 4 characters')
@@ -59,14 +59,14 @@ export const updateLinkSchema = z.object({
         .nullable(),
     startsAt: z
         .string()
-        .datetime()
         .optional()
-        .nullable(),
+        .nullable()
+        .transform(val => val === '' ? null : val),
     expiresAt: z
         .string()
-        .datetime()
         .optional()
-        .nullable(),
+        .nullable()
+        .transform(val => val === '' ? null : val),
     password: z
         .string()
         .min(4, 'Password must be at least 4 characters')
