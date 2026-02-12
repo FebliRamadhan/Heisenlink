@@ -25,6 +25,7 @@ export default async function PublicPage({ params }: { params: { slug: string } 
             return <PublicBioView bioPage={bioPage} />
         }
     } catch (e: any) {
+        if (e?.digest?.startsWith('NEXT_REDIRECT')) throw e
         console.log(`[SLUG] Bio check failed: ${e.message}`)
     }
 
@@ -80,7 +81,10 @@ export default async function PublicPage({ params }: { params: { slug: string } 
             // TODO: implement password entry page
             redirect('/not-found')
         }
-    } catch (e) {
+    } catch (e: any) {
+        // CRITICAL: Next.js redirect() throws NEXT_REDIRECT error internally
+        // Must re-throw so Next.js can handle the redirect
+        if (e?.digest?.startsWith('NEXT_REDIRECT')) throw e
         // API unreachable - show not-found
         console.error(`[slug] resolve failed for ${slug}:`, e)
     }
