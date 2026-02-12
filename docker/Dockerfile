@@ -8,9 +8,6 @@ FROM node:20-alpine AS base
 FROM base AS deps
 WORKDIR /app
 
-# Install OpenSSL 1.1 compat for Prisma
-RUN apk add --no-cache openssl1.1-compat
-
 # Copy package files
 COPY package*.json ./
 COPY prisma ./prisma/
@@ -26,9 +23,6 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-
-# Install OpenSSL 1.1 compat for Prisma
-RUN apk add --no-cache openssl1.1-compat
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs
