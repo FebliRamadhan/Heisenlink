@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   # ===========================================
-  # Application Server
+  # Backend API Server
   # ===========================================
   app:
     build:
@@ -28,6 +26,25 @@ services:
       - logs:/app/logs
 
   # ===========================================
+  # Next.js Frontend
+  # ===========================================
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: linkhub-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:4000}
+    env_file:
+      - .env
+    depends_on:
+      - app
+    networks:
+      - linkhub-network
+
+  # ===========================================
   # Nginx Reverse Proxy
   # ===========================================
   nginx:
@@ -40,10 +57,24 @@ services:
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - certbot-www:/var/www/certbot:ro
+      - uploads:/app/public/uploads:ro
     depends_on:
       - app
+      - frontend
     networks:
       - linkhub-network
+
+  # ===========================================
+  # Certbot (SSL Certificate Manager)
+  # ===========================================
+  certbot:
+    image: certbot/certbot:latest
+    container_name: linkhub-certbot
+    volumes:
+      - ./docker/nginx/ssl:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
   # ===========================================
   # PostgreSQL Database
@@ -61,12 +92,10 @@ services:
     networks:
       - linkhub-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U linkhub -d linkhub"]
+      test: [ "CMD-SHELL", "pg_isready -U linkhub -d linkhub" ]
       interval: 10s
       timeout: 5s
       retries: 5
-    ports:
-      - "5435:5432"
 
   # ===========================================
   # Redis Cache
@@ -81,12 +110,10 @@ services:
     networks:
       - linkhub-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
-    ports:
-      - "6379:6379"
 
 # ===========================================
 # Volumes
@@ -99,6 +126,8 @@ volumes:
   uploads:
     driver: local
   logs:
+    driver: local
+  certbot-www:
     driver: local
 
 # ===========================================

@@ -1,0 +1,45 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Build output
+.next
+out
+dist
+
+# Version control
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose*.yml
+docker/nginx/ssl/
+
+# Logs
+logs/
+*.log
+
+# Environment (keep .env.example)
+.env
+.env.local
+.env.*.local
+
+# Dev files
+README.md
+.eslintrc*
+.prettierrc*
+tsconfig.tsbuildinfo
+
+# Agent/AI
+.agent/
+.gemini/
