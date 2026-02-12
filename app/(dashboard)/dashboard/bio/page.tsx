@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { BioLinkList } from "@/components/bio/bio-link-list"
 import { BioPreview } from "@/components/bio/bio-preview"
 import { ThemeSelector } from "@/components/bio/theme-selector"
+import { SocialLinksEditor } from "@/components/bio/social-links-editor"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2 } from "lucide-react"
@@ -163,6 +164,8 @@ function BioForm({ bioPage }: { bioPage: any }) {
                         </Form>
                     </CardContent>
                 </Card>
+
+                <SocialLinksEditor socialLinks={bioPage.socialLinks || []} />
             </TabsContent>
 
             <TabsContent value="links" className="space-y-4">

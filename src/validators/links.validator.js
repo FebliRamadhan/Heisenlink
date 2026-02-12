@@ -38,6 +38,9 @@ export const createLinkSchema = z.object({
         .max(50, 'Password must be at most 50 characters')
         .or(z.literal(''))
         .optional(),
+    showConfirmation: z
+        .boolean()
+        .optional(),
 });
 
 /**
@@ -71,6 +74,9 @@ export const updateLinkSchema = z.object({
         .or(z.literal(''))
         .optional()
         .nullable(),
+    showConfirmation: z
+        .boolean()
+        .optional(),
     isActive: z
         .boolean()
         .optional(),

@@ -57,4 +57,19 @@ router.post('/:code/verify', rateLimiters.auth, async (req, res, next) => {
     redirectController.verifyAndRedirect(req, res, next);
 });
 
+/**
+ * @route   GET /:code/resolve
+ * @desc    Resolve a shortlink (return metadata without redirecting)
+ * @access  Public
+ */
+router.get('/:code/resolve', rateLimiters.redirect, async (req, res, next) => {
+    const { code } = req.params;
+
+    if (skipPaths.some(path => code.startsWith(path))) {
+        return next();
+    }
+
+    redirectController.resolveLink(req, res, next);
+});
+
 export default router;

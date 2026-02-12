@@ -1,26 +1,26 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { SearchX, Home, ArrowLeft } from "lucide-react"
+import { ShieldX, ArrowLeft, Home } from "lucide-react"
 
-export default function NotFound() {
+export default function ForbiddenPage() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center">
             <div className="relative mb-8">
                 <div className="text-[120px] font-bold text-muted-foreground/10 leading-none select-none">
-                    404
+                    403
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-                        <SearchX className="h-10 w-10 text-muted-foreground" />
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
+                        <ShieldX className="h-10 w-10 text-destructive" />
                     </div>
                 </div>
             </div>
 
             <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                Page Not Found
+                Access Denied
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-md">
-                The page you&apos;re looking for doesn&apos;t exist or has been moved.
+                You don&apos;t have permission to access this resource.
             </p>
 
             <div className="mt-8 flex gap-3">

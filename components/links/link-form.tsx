@@ -29,6 +29,7 @@ const formSchema = z.object({
     password: z.string().optional(),
     startsAt: z.string().optional(),
     expiresAt: z.string().optional(),
+    showConfirmation: z.boolean().optional(),
     isActive: z.boolean().optional(),
 })
 
@@ -53,6 +54,7 @@ export function LinkForm({ initialData }: LinkFormProps) {
             password: "",
             startsAt: "",
             expiresAt: "",
+            showConfirmation: false,
             isActive: true,
         },
     })
@@ -213,6 +215,28 @@ export function LinkForm({ initialData }: LinkFormProps) {
                         />
                     </div>
                 </div>
+
+                {/* Confirmation Page Toggle */}
+                <FormField
+                    control={form.control}
+                    name="showConfirmation"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                                <FormLabel className="text-base">Confirmation Page</FormLabel>
+                                <FormDescription>
+                                    Show a preview page before redirecting visitors.
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
 
                 <FormField
                     control={form.control}

@@ -30,6 +30,12 @@ const THEMES: Record<string, any> = {
 export function BioPreview({ bioPage }: BioPreviewProps) {
     const theme = THEMES[bioPage.theme] || THEMES.gradient
 
+    const PLATFORM_ICONS: Record<string, string> = {
+        instagram: "📷", twitter: "𝕏", tiktok: "🎵", youtube: "▶️",
+        github: "🐙", linkedin: "💼", facebook: "📘", whatsapp: "💬",
+        telegram: "✈️", email: "📧", website: "🌐", spotify: "🎧",
+    }
+
     return (
         <div className="mockup-phone border-gray-300 dark:border-gray-700 border-[8px] rounded-[2.5rem] h-[700px] w-[350px] overflow-hidden shadow-xl relative bg-black">
             <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-40 h-6 bg-black rounded-b-xl z-20"></div>
@@ -51,6 +57,29 @@ export function BioPreview({ bioPage }: BioPreviewProps) {
                         <h1 className="text-xl font-bold font-heading">{bioPage.title}</h1>
                         <p className="text-sm opacity-90 max-w-[280px]">{bioPage.bio}</p>
                     </div>
+
+                    {/* Social Links Icons */}
+                    {bioPage.socialLinks?.length > 0 && (
+                        <div className="flex flex-wrap gap-3 justify-center">
+                            {bioPage.socialLinks.filter((s: any) => s.url).map((social: any) => (
+                                <a
+                                    key={social.platform}
+                                    href={social.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="w-10 h-10 rounded-full flex items-center justify-center text-lg hover:scale-110 transition-transform"
+                                    style={{
+                                        background: 'rgba(255, 255, 255, 0.15)',
+                                        backdropFilter: 'blur(10px)',
+                                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    }}
+                                    title={social.platform}
+                                >
+                                    {PLATFORM_ICONS[social.platform] || "🔗"}
+                                </a>
+                            ))}
+                        </div>
+                    )}
 
                     <div className="w-full space-y-3 mt-6">
                         {bioPage.links?.filter((l: any) => l.isVisible).map((link: any) => (
@@ -75,3 +104,4 @@ export function BioPreview({ bioPage }: BioPreviewProps) {
         </div>
     )
 }
+
