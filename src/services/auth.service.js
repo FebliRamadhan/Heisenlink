@@ -76,7 +76,8 @@ export const login = async (username, password, context = {}) => {
                     where: { id: user.id },
                     data: {
                         email: ldapUser.email || user.email,
-                        name: ldapUser.displayName || user.name,
+                        displayName: ldapUser.displayName || user.displayName,
+                        ldapDn: ldapUser.dn || user.ldapDn,
                         lastLoginAt: new Date(),
                     },
                 });
@@ -86,7 +87,8 @@ export const login = async (username, password, context = {}) => {
                     data: {
                         username: ldapUser.username || username,
                         email: ldapUser.email || `${username}@ldap.local`,
-                        name: ldapUser.displayName || username,
+                        displayName: ldapUser.displayName || username,
+                        ldapDn: ldapUser.dn,
                         isActive: true,
                         role: 'USER',
                         lastLoginAt: new Date(),
