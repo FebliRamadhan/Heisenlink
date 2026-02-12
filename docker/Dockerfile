@@ -1,5 +1,5 @@
 # ===========================================
-# LinkHub - Production Dockerfile
+# Heisenlink - Production Dockerfile
 # ===========================================
 
 FROM node:20-alpine AS base
@@ -7,6 +7,9 @@ FROM node:20-alpine AS base
 # Install dependencies only when needed
 FROM base AS deps
 WORKDIR /app
+
+# Install OpenSSL 1.1 compat for Prisma
+RUN apk add --no-cache openssl1.1-compat
 
 # Copy package files
 COPY package*.json ./
@@ -23,6 +26,9 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+
+# Install OpenSSL 1.1 compat for Prisma
+RUN apk add --no-cache openssl1.1-compat
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs
@@ -48,3 +54,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
 CMD ["node", "src/server.js"]
+
