@@ -18,6 +18,12 @@ export const authenticateLdap = async (username, password) => {
         return null;
     }
 
+    logger.info(`[LDAP] Attempting auth for user: ${username}`);
+    logger.info(`[LDAP] URL: ${config.ldap.url}`);
+    logger.info(`[LDAP] Bind DN: ${config.ldap.bindDn}`);
+    logger.info(`[LDAP] Search Base: ${config.ldap.searchBase}`);
+    logger.info(`[LDAP] Search Filter: ${config.ldap.searchFilter}`);
+
     return new Promise((resolve, reject) => {
         const client = ldap.createClient({
             url: config.ldap.url,
@@ -26,18 +32,21 @@ export const authenticateLdap = async (username, password) => {
         });
 
         client.on('error', (err) => {
-            logger.error('LDAP connection error:', err.message);
+            logger.error('[LDAP] Connection error:', err.message);
             resolve(null);
         });
 
         // First, bind with service account to search for user
         client.bind(config.ldap.bindDn, config.ldap.bindPassword, (bindErr) => {
             if (bindErr) {
-                logger.error('LDAP service bind failed:', bindErr.message);
+                logger.error(`[LDAP] Service bind FAILED - code: ${bindErr.code}, name: ${bindErr.name}, message: ${bindErr.message}`);
+                logger.error(`[LDAP] Full error:`, JSON.stringify(bindErr, Object.getOwnPropertyNames(bindErr)));
                 client.destroy();
                 resolve(null);
                 return;
             }
+
+            logger.info('[LDAP] Service bind OK, searching for user...');
 
             // Search for user
             const searchFilter = config.ldap.searchFilter.replace('{{username}}', username);
