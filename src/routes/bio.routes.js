@@ -50,7 +50,25 @@ const upload = multer({
     },
 });
 
-// All routes require authentication
+// ===========================================
+// Public Routes (no auth required)
+// ===========================================
+
+/**
+ * @route   GET /api/bio/:slug
+ * @desc    Get public bio page by slug
+ * @access  Public
+ */
+router.get('/:slug', (req, res, next) => {
+    // Skip reserved sub-paths so they fall through to authenticated routes
+    const reserved = ['qr', 'avatar', 'links'];
+    if (reserved.includes(req.params.slug)) {
+        return next('route');
+    }
+    return bioController.getPublicBioPage(req, res, next);
+});
+
+// All routes below require authentication
 router.use(authenticate);
 
 // ===========================================
