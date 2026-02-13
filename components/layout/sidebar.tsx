@@ -55,7 +55,7 @@ export function Sidebar({ mobile, onNavigate }: SidebarProps = {}) {
             adminOnly: true,
         },
         {
-            href: "/dashboard/admin/logs",
+            href: "/dashboard/admin/audit",
             title: "Login Logs",
             icon: Shield,
             adminOnly: true,

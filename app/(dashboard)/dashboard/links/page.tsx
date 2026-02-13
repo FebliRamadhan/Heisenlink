@@ -11,6 +11,8 @@ import Link from "next/link"
 import { useState } from "react"
 import { useDebounce } from "@/hooks/use-debounce"
 
+import { BulkImportDialog } from "@/components/links/bulk-import-dialog"
+
 export default function LinksPage() {
     const [search, setSearch] = useState("")
     const [page, setPage] = useState(1)
@@ -41,6 +43,7 @@ export default function LinksPage() {
             <div className="flex items-center justify-between space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight">Links</h2>
                 <div className="flex items-center space-x-2">
+                    <BulkImportDialog />
                     <Link href="/dashboard/links/new">
                         <Button>
                             <Plus className="mr-2 h-4 w-4" /> Create Link

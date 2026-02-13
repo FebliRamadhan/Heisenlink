@@ -7,6 +7,7 @@ import config from '../config/index.js';
 import { cacheBioPage, invalidateBioPage, getCachedBioPage } from './cache.service.js';
 import { errors } from '../middleware/error.middleware.js';
 import { sanitizeUrl, isValidUrl } from '../utils/helpers.js';
+import { isReservedAlias } from '../utils/shortcode.js';
 import logger from '../utils/logger.js';
 
 /**
@@ -114,14 +115,21 @@ export const updateBioPage = async (userId, data) => {
 
     // Handle slug change
     if (slug !== undefined && slug !== bioPage.slug) {
+        const normalizedSlug = slug.toLowerCase();
+
+        // Check if slug is reserved
+        if (isReservedAlias(normalizedSlug)) {
+            throw errors.badRequest('This URL is reserved and cannot be used');
+        }
+
         // Check if new slug is available
         const existing = await prisma.bioPage.findUnique({
-            where: { slug },
+            where: { slug: normalizedSlug },
         });
         if (existing) {
             throw errors.conflict('This URL is already taken');
         }
-        updateData.slug = slug.toLowerCase();
+        updateData.slug = normalizedSlug;
     }
 
     const updated = await prisma.bioPage.update({
