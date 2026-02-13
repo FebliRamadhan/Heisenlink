@@ -207,7 +207,7 @@ export const getAllBioPages = async (req, res, next) => {
         if (search) {
             where.OR = [
                 { title: { contains: search, mode: 'insensitive' } },
-                { urlHandle: { contains: search, mode: 'insensitive' } },
+                { slug: { contains: search, mode: 'insensitive' } },
                 { bio: { contains: search, mode: 'insensitive' } },
             ];
         }

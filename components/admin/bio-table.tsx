@@ -30,7 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 interface AdminBioPage {
     id: string
     title: string
-    urlHandle: string
+    slug: string
     avatarUrl: string
     createdAt: string
     linksCount: number
@@ -112,8 +112,8 @@ export function AdminBioTable({
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex items-center space-x-2">
-                                        <span className="font-mono text-sm">@{bio.urlHandle}</span>
-                                        <a href={`/bio/${bio.urlHandle}`} target="_blank" rel="noreferrer">
+                                        <span className="font-mono text-sm">@{bio.slug}</span>
+                                        <a href={`/${bio.slug}`} target="_blank" rel="noreferrer">
                                             <ExternalLink className="h-3 w-3 text-muted-foreground hover:text-foreground" />
                                         </a>
                                     </div>
@@ -121,7 +121,7 @@ export function AdminBioTable({
                                 <TableCell>{bio.linksCount}</TableCell>
                                 <TableCell className="text-right">
                                     {/* Action buttons placeholder */}
-                                    <a href={`/bio/${bio.urlHandle}`} target="_blank" rel="noreferrer">
+                                    <a href={`/${bio.slug}`} target="_blank" rel="noreferrer">
                                         <Button variant="ghost" size="sm">View Public</Button>
                                     </a>
                                 </TableCell>

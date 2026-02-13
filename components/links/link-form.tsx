@@ -22,9 +22,25 @@ import api from "@/lib/api"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
 
+// Reserved aliases that conflict with app routes — must match backend shortcode.js
+const RESERVED_ALIASES = new Set([
+    'api', 'admin', 'login', 'logout', 'register', 'settings', 'dashboard',
+    'analytics', 'bio', 'health', 'forbidden', 'link-expired', 'link-inactive',
+    'not-found', 'too-many-requests', 'error', 'loading', 'static', 'public',
+    'assets', 'images', 'css', 'js', 'favicon', '_next', '_error', '_app',
+    'auth', 'signup', 'reset-password', 'verify', 'callback', 'redirect',
+    'sitemap', 'robots', 'manifest',
+])
+
 const formSchema = z.object({
     url: z.string().url("Please enter a valid URL"),
-    alias: z.string().min(3, "Alias must be at least 3 characters").optional().or(z.literal("")),
+    alias: z.string()
+        .min(3, "Alias must be at least 3 characters")
+        .refine(val => !RESERVED_ALIASES.has(val.toLowerCase()), {
+            message: "This alias is reserved and cannot be used",
+        })
+        .optional()
+        .or(z.literal("")),
     title: z.string().optional(),
     password: z.string().optional(),
     startsAt: z.string().optional(),

@@ -44,6 +44,7 @@ export const normalizeAlias = (alias) => {
  * List of reserved words that cannot be used as aliases
  */
 export const reservedWords = [
+    // App routes
     'api',
     'admin',
     'login',
@@ -54,6 +55,14 @@ export const reservedWords = [
     'analytics',
     'bio',
     'health',
+    'forbidden',
+    'link-expired',
+    'link-inactive',
+    'not-found',
+    'too-many-requests',
+    'error',
+    'loading',
+    // Static / asset paths
     'static',
     'public',
     'assets',
@@ -61,6 +70,20 @@ export const reservedWords = [
     'css',
     'js',
     'favicon',
+    // Next.js internals
+    '_next',
+    '_error',
+    '_app',
+    // Common reserved paths
+    'auth',
+    'signup',
+    'reset-password',
+    'verify',
+    'callback',
+    'redirect',
+    'sitemap',
+    'robots',
+    'manifest',
 ];
 
 /**
