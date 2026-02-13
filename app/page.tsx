@@ -2,10 +2,11 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Link as LinkIcon, Shield, BarChart3, Globe, Zap, Lock, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { AuthButton } from "@/components/landing/auth-button"
 
 export default function Home() {
     return (
-        <div className="flex flex-col min-h-screen overflow-hidden selection:bg-primary/30">
+        <div className="flex flex-col min-h-screen overflow-x-hidden selection:bg-primary/30">
             {/* Abstract Background Shapes */}
             <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
                 <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-blue-400/20 blur-[120px]" />
@@ -30,11 +31,7 @@ export default function Home() {
                         </span>
                     </nav>
                     <div className="ml-6 flex items-center gap-3">
-                        <Link href="/login">
-                            <Button className="rounded-full px-6 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-cyan-600 hover:shadow-primary/40 hover:scale-105 transition-all duration-300">
-                                Sign In
-                            </Button>
-                        </Link>
+                        <AuthButton variant="header" />
                     </div>
                 </div>
             </header>
@@ -128,10 +125,10 @@ export default function Home() {
                     </div>
                 </section>
 
-                <section className="w-full py-24 relative overflow-hidden">
+                <section className="w-full py-24 relative overflow-x-hidden">
                     <div className="absolute inset-0 bg-primary/5 -skew-y-3 z-0 transform origin-left scale-110" />
                     <div className="container px-4 md:px-6 mx-auto relative z-10">
-                        <div className="flex flex-col items-center justify-center space-y-8 text-center bg-white/50 dark:bg-black/50 backdrop-blur-xl p-12 rounded-3xl border border-white/20 shadow-2xl max-w-4xl mx-auto">
+                        <div className="flex flex-col items-center justify-center space-y-8 text-center bg-white/50 dark:bg-black/50 backdrop-blur-xl p-6 md:p-12 rounded-2xl md:rounded-3xl border border-white/20 shadow-2xl max-w-4xl mx-auto">
                             <div className="space-y-4">
                                 <h2 className="text-4xl font-bold tracking-tight">Need Access?</h2>
                                 <p className="max-w-[600px] text-muted-foreground text-xl mx-auto">
@@ -139,11 +136,7 @@ export default function Home() {
                                 </p>
                             </div>
                             <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                                <Link href="/login" className="w-full sm:w-auto">
-                                    <Button size="lg" className="w-full h-14 px-10 text-lg rounded-full shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-cyan-600">
-                                        Login to Portal
-                                    </Button>
-                                </Link>
+                                <AuthButton variant="cta" />
                             </div>
                         </div>
                     </div>
@@ -158,7 +151,7 @@ export default function Home() {
                         </div>
                         <span className="font-bold text-lg">LinkHub</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">© 2026 Internal System. Authorized Personnel Only.</p>
+                    <p className="text-sm text-muted-foreground">© 2026 Biro Data dan Teknologi Informasi - KemenPANRB.</p>
                 </div>
             </footer>
         </div>

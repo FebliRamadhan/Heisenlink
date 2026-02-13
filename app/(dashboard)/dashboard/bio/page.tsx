@@ -53,7 +53,7 @@ export default function BioPage() {
     }
 
     return (
-        <div className="flex-1 p-8 pt-6 h-[calc(100vh-4rem)] overflow-hidden">
+        <div className="flex-1 p-8 pt-6 h-[calc(100vh-4rem)] supports-[height:100dvh]:h-[calc(100dvh-4rem)] overflow-y-auto">
             <div className="flex h-full gap-6">
                 <div className="flex-1 overflow-y-auto pr-2 pb-20">
                     <div className="flex items-center justify-between space-y-2 mb-6">
