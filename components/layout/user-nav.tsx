@@ -11,12 +11,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 
 export function UserNav() {
     const { user, logout } = useAuth()
     const router = useRouter()
+    const queryClient = useQueryClient()
 
     const handleLogout = () => {
+        // Clear all React Query cache (prevents stale data from previous user)
+        queryClient.clear()
+        // Clear auth state
         logout()
         router.push("/login")
     }
@@ -26,7 +31,7 @@ export function UserNav() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full" aria-label="User menu">
                     <Avatar className="h-8 w-8">
                         <AvatarImage src={user.avatarUrl} alt={user.username} />
                         <AvatarFallback>{user.displayName?.[0] || user.username[0].toUpperCase()}</AvatarFallback>

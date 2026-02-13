@@ -36,7 +36,7 @@ export default function DashboardLayout({
             <Header />
             <div className="flex flex-1">
                 <Sidebar />
-                <main className="flex-1 p-8 overflow-y-auto max-h-[calc(100vh-4rem)]">
+                <main className="flex-1 p-4 md:p-8 overflow-y-auto h-[calc(100vh-4rem)] supports-[height:100dvh]:h-[calc(100dvh-4rem)]">
                     {children}
                 </main>
             </div>

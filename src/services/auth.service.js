@@ -59,22 +59,34 @@ export const login = async (username, password, context = {}) => {
     let user = null;
     let ldapUser = null;
 
+    username = username.includes('@') ? username.split('@')[0] : username;
+
     // Try LDAP authentication first (if enabled)
     try {
         ldapUser = await authenticateLdap(username, password);
         if (ldapUser) {
             logger.info(`User ${username} authenticated via LDAP`);
 
-            // Find or create local user from LDAP
-            user = await prisma.user.findUnique({ where: { username } });
+            // Find existing user by username OR email (avoid unique constraint errors)
+            const ldapEmail = ldapUser.email || `${username}@ldap.local`;
+            user = await prisma.user.findFirst({
+                where: {
+                    OR: [
+                        { username },
+                        { email: ldapEmail },
+                    ],
+                },
+            });
 
             if (user) {
-                // Update existing user with LDAP data
+                // Update existing user with LDAP data + fix username if needed
                 user = await prisma.user.update({
                     where: { id: user.id },
                     data: {
-                        email: ldapUser.email || user.email,
-                        name: ldapUser.displayName || user.name,
+                        username, // ensure username is without @domain
+                        email: ldapEmail,
+                        displayName: ldapUser.displayName || user.displayName,
+                        ldapDn: ldapUser.dn || user.ldapDn,
                         lastLoginAt: new Date(),
                     },
                 });
@@ -83,8 +95,9 @@ export const login = async (username, password, context = {}) => {
                 user = await prisma.user.create({
                     data: {
                         username: ldapUser.username || username,
-                        email: ldapUser.email || `${username}@ldap.local`,
-                        name: ldapUser.displayName || username,
+                        email: ldapEmail,
+                        displayName: ldapUser.displayName || username,
+                        ldapDn: ldapUser.dn,
                         isActive: true,
                         role: 'USER',
                         lastLoginAt: new Date(),
@@ -94,7 +107,8 @@ export const login = async (username, password, context = {}) => {
             }
         }
     } catch (ldapErr) {
-        logger.warn(`LDAP auth failed for ${username}: ${ldapErr.message}`);
+        logger.error(`LDAP login failed for ${username}:`, ldapErr);
+        logger.error(`Error details: ${JSON.stringify(ldapErr, Object.getOwnPropertyNames(ldapErr))}`);
         // Fall through to local authentication
     }
 

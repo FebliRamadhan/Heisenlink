@@ -97,7 +97,7 @@ export function LinksTable({
 
     return (
         <div className="space-y-4">
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -142,7 +142,7 @@ export function LinksTable({
                                 <TableCell>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                            <Button variant="ghost" className="h-8 w-8 p-0 min-h-[44px] min-w-[44px]" aria-label="Link actions">
                                                 <MoreHorizontal className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
@@ -190,8 +190,8 @@ export function LinksTable({
             </div>
 
             {pagination && (
-                <div className="flex items-center justify-end space-x-2 py-4">
-                    <div className="flex-1 text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-2 py-4">
+                    <div className="text-sm text-muted-foreground">
                         Showing {(pagination.page - 1) * pagination.limit + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
                     </div>
                     <div className="space-x-2">

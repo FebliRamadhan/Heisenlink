@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -20,6 +20,7 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
+import { useQueryClient } from "@tanstack/react-query"
 
 const loginSchema = z.object({
     username: z.string().min(3, "Username must be at least 3 characters"),
@@ -30,9 +31,16 @@ type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
     const router = useRouter()
-    const { login } = useAuth()
+    const { login, logout } = useAuth()
     const { toast } = useToast()
     const [isLoading, setIsLoading] = useState(false)
+    const queryClient = useQueryClient()
+
+    // Clear all stale data when login page loads (covers all logout paths)
+    useEffect(() => {
+        queryClient.clear()
+        logout()
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     const {
         register,

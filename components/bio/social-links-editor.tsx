@@ -105,7 +105,7 @@ export function SocialLinksEditor({ socialLinks: initialLinks }: SocialLinksEdit
                                     key={link.platform}
                                     className="flex items-center gap-3 p-3 rounded-lg border bg-card"
                                 >
-                                    <span className="text-xl w-8 text-center flex-shrink-0">
+                                    <span className="text-xl w-8 text-center flex-shrink-0 emoji-icon">
                                         {platform?.icon}
                                     </span>
                                     <div className="flex-1 min-w-0">
@@ -125,6 +125,7 @@ export function SocialLinksEditor({ socialLinks: initialLinks }: SocialLinksEdit
                                         size="icon"
                                         className="flex-shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
                                         onClick={() => removeLink(index)}
+                                        aria-label={`Remove ${platform?.label}`}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -155,7 +156,7 @@ export function SocialLinksEditor({ socialLinks: initialLinks }: SocialLinksEdit
                                     className="justify-start gap-2 h-9"
                                     onClick={() => addPlatform(platform.id)}
                                 >
-                                    <span className="text-base">{platform.icon}</span>
+                                    <span className="text-base emoji-icon">{platform.icon}</span>
                                     <span className="text-xs">{platform.label}</span>
                                 </Button>
                             ))}

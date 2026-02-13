@@ -112,6 +112,11 @@
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-500 dark:from-primary dark:to-cyan-400;
   }
 
+  .emoji-icon {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+    line-height: 1;
+  }
+
   .bg-grid-pattern {
     background-size: 40px 40px;
     background-image:
@@ -123,5 +128,18 @@
     background-image:
       linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
       linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  }
+}
+
+/* Respect motion sensitivity settings across all browsers */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
