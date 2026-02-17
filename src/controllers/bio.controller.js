@@ -24,6 +24,27 @@ export const getBioPage = async (req, res, next) => {
 };
 
 /**
+ * Get public bio page by slug
+ * GET /api/bio/:slug (public, no auth required)
+ */
+export const getPublicBioPage = async (req, res, next) => {
+    try {
+        const bioPage = await bioService.getBioPageBySlug(req.params.slug);
+
+        if (!bioPage) {
+            return res.status(404).json({
+                success: false,
+                error: { code: 'NOT_FOUND', message: 'Bio page not found' },
+            });
+        }
+
+        res.json(formatResponse(bioPage));
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * Update bio page
  * PATCH /api/bio
  */
@@ -152,6 +173,7 @@ export const reorderLinks = async (req, res, next) => {
 
 export default {
     getBioPage,
+    getPublicBioPage,
     updateBioPage,
     uploadAvatar,
     getQRCode,
