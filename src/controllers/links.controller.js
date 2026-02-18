@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Links Controller
+// Heisenlink - Links Controller
 // ===========================================
 
 import * as linksService from '../services/links.service.js';

@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Auth Validators
+// Heisenlink - Auth Validators
 // ===========================================
 
 import { z } from 'zod';

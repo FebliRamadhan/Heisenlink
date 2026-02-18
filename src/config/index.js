@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Configuration Loader
+// Heisenlink - Configuration Loader
 // ===========================================
 
 import dotenv from 'dotenv';
@@ -10,7 +10,7 @@ dotenv.config();
 const config = {
     // Application
     app: {
-        name: process.env.APP_NAME || 'LinkHub',
+        name: process.env.APP_NAME || 'Heisenlink',
         env: process.env.NODE_ENV || 'development',
         port: parseInt(process.env.PORT, 10) || 3000,
         url: process.env.APP_URL || 'http://localhost:3000',

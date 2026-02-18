@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Password Utilities
+// Heisenlink - Password Utilities
 // ===========================================
 
 import bcrypt from 'bcrypt';

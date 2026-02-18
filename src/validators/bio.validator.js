@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Bio Validators
+// Heisenlink - Bio Validators
 // ===========================================
 
 import { z } from 'zod';

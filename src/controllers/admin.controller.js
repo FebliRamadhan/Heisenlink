@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Admin Controller
+// Heisenlink - Admin Controller
 // ===========================================
 
 import prisma from '../config/database.js';

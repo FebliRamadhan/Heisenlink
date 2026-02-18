@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Auth Controller
+// Heisenlink - Auth Controller
 // ===========================================
 
 import * as authService from '../services/auth.service.js';

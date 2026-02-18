@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Bio Service
+// Heisenlink - Bio Service
 // ===========================================
 
 import prisma from '../config/database.js';

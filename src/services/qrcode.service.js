@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - QR Code Service
+// Heisenlink - QR Code Service
 // ===========================================
 
 import QRCode from 'qrcode';

@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Short Code Generator
+// Heisenlink - Short Code Generator
 // ===========================================
 
 import { nanoid, customAlphabet } from 'nanoid';

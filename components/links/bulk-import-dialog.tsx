@@ -54,7 +54,7 @@ export function BulkImportDialog() {
         const url = URL.createObjectURL(blob)
         const a = document.createElement("a")
         a.href = url
-        a.download = "linkhub-bulk-template.csv"
+        a.download = "heisenlink-bulk-template.csv"
         a.click()
         URL.revokeObjectURL(url)
     }

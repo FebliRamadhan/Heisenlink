@@ -218,7 +218,7 @@ function BioForm({ bioPage }: { bioPage: any }) {
                                             <FormLabel>URL Slug</FormLabel>
                                             <FormControl>
                                                 <div className="flex items-center">
-                                                    <span className="text-muted-foreground mr-2">linkhub.com/bio/</span>
+                                                    <span className="text-muted-foreground mr-2">s.menpan.go.id/</span>
                                                     <Input {...field} className="max-w-[200px]" />
                                                 </div>
                                             </FormControl>

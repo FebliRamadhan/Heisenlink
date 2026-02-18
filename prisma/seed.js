@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Database Seed Script
+// Heisenlink - Database Seed Script
 // ===========================================
 
 import { PrismaClient } from '@prisma/client';

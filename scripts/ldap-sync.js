@@ -1,4 +1,4 @@
-// LinkHub LDAP Sync Script
+// Heisenlink LDAP Sync Script
 // Usage: node scripts/ldap-sync.js
 
 import prisma from '../src/config/database.js';
@@ -25,7 +25,7 @@ async function syncUsers() {
         // This implementation depends on your LDAP structure
         // Assuming we want to sync all users from a specific group
         const baseDN = process.env.LDAP_BASE_DN;
-        const filter = '(&(objectClass=person)(memberOf=CN=LinkHubUsers,OU=Groups,DC=example,DC=com))';
+        const filter = '(&(objectClass=person)(memberOf=CN=HeisenLinkUsers,OU=Groups,DC=example,DC=com))';
 
         // Note: ldapService needs to expose a search method or similar.
         // Since our ldapService was built primarily for auth/bind, 

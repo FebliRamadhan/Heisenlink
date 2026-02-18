@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Analytics Service
+// Heisenlink - Analytics Service
 // ===========================================
 
 import prisma from '../config/database.js';

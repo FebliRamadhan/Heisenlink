@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Winston Logger Configuration
+// Heisenlink - Winston Logger Configuration
 // ===========================================
 
 import winston from 'winston';

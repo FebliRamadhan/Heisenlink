@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Public Routes (Redirects & Bio)
+// Heisenlink - Public Routes (Redirects & Bio)
 // ===========================================
 
 import { Router } from 'express';

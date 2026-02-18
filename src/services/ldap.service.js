@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - LDAP Service
+// Heisenlink - LDAP Service
 // ===========================================
 
 import ldap from 'ldapjs';

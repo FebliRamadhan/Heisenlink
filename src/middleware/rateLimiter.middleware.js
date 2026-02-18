@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Rate Limiter Middleware
+// Heisenlink - Rate Limiter Middleware
 // ===========================================
 
 import { getRedisClient } from '../config/redis.js';

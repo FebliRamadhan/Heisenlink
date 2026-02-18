@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Admin Routes
+// Heisenlink - Admin Routes
 // ===========================================
 
 import { Router } from 'express';

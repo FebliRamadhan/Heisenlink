@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Auth Service
+// Heisenlink - Auth Service
 // ===========================================
 
 import jwt from 'jsonwebtoken';

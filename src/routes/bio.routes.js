@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Bio Routes
+// Heisenlink - Bio Routes
 // ===========================================
 
 import { Router } from 'express';

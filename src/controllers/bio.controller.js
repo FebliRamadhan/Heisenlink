@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Bio Controller
+// Heisenlink - Bio Controller
 // ===========================================
 
 import * as bioService from '../services/bio.service.js';

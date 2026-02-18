@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Auth Routes
+// Heisenlink - Auth Routes
 // ===========================================
 
 import { Router } from 'express';

@@ -26,7 +26,8 @@ export default function Header() {
                 </Sheet>
                 <div className="flex items-center gap-4">
                     <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-                        <span className="text-xl">LinkHub</span>
+                        <img src="/logo-panrb.png" alt="Logo Kementerian PANRB" className="h-10 w-auto" />
+                        <span className="text-lg hidden sm:inline">Heisenlink</span>
                     </Link>
                 </div>
                 <div className="ml-auto flex items-center space-x-4">

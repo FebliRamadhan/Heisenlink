@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Analytics Routes
+// Heisenlink - Analytics Routes
 // ===========================================
 
 import { Router } from 'express';

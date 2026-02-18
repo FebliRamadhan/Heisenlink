@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Redirect Controller
+// Heisenlink - Redirect Controller
 // ===========================================
 
 import * as linksService from '../services/links.service.js';

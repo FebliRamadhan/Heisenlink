@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Audit Service
+// Heisenlink - Audit Service
 // ===========================================
 
 import prisma from '../config/database.js';
