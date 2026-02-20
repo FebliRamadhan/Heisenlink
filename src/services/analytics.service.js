@@ -224,7 +224,8 @@ export const getGlobalOverview = async (dateRange = {}) => {
     if (from) dateFilter.gte = new Date(from);
     if (to) dateFilter.lte = new Date(to);
 
-    const clickDateWhere = Object.keys(dateFilter).length > 0 ? { clickedAt: dateFilter } : {};
+    const hasDateFilter = Object.keys(dateFilter).length > 0;
+    const clickDateWhere = hasDateFilter ? { clickedAt: dateFilter } : undefined;
 
     // Get global counts
     const [totalUsers, activeUsers, totalLinks, totalBioPages, shortlinkClicks, bioLinkClicks, recentUsers] = await Promise.all([
@@ -235,13 +236,13 @@ export const getGlobalOverview = async (dateRange = {}) => {
         prisma.clickEvent.count({
             where: {
                 linkType: 'SHORTLINK',
-                ...clickDateWhere,
+                ...(hasDateFilter && { clickedAt: dateFilter }),
             },
         }),
         prisma.clickEvent.count({
             where: {
                 linkType: 'BIOLINK',
-                ...clickDateWhere,
+                ...(hasDateFilter && { clickedAt: dateFilter }),
             },
         }),
         prisma.user.findMany({
@@ -275,66 +276,93 @@ export const getGlobalOverview = async (dateRange = {}) => {
     }
 
     // Top performing links (globally)
-    const topLinks = await prisma.shortLink.findMany({
-        orderBy: { clickCount: 'desc' },
-        take: 10,
-        select: {
-            id: true,
-            code: true,
-            title: true,
-            clickCount: true,
-            user: {
-                select: { username: true, displayName: true },
+    let topLinks = [];
+    try {
+        topLinks = await prisma.shortLink.findMany({
+            orderBy: { clickCount: 'desc' },
+            take: 10,
+            select: {
+                id: true,
+                code: true,
+                title: true,
+                clickCount: true,
+                user: {
+                    select: { username: true, displayName: true },
+                },
             },
-        },
-    });
+        });
+    } catch (e) {
+        logger.warn('Failed to fetch topLinks', e);
+    }
 
     // Top users by links
-    const topUsersByLinks = await prisma.user.findMany({
-        select: {
-            username: true,
-            displayName: true,
-            _count: { select: { shortLinks: true } },
-        },
-        orderBy: { shortLinks: { _count: 'desc' } },
-        take: 5,
-    });
+    let topUsersByLinks = [];
+    try {
+        topUsersByLinks = await prisma.user.findMany({
+            select: {
+                username: true,
+                displayName: true,
+                _count: { select: { shortLinks: true } },
+            },
+            orderBy: { shortLinks: { _count: 'desc' } },
+            take: 5,
+        });
+    } catch (e) {
+        logger.warn('Failed to fetch topUsersByLinks', e);
+    }
 
-    // Global breakdowns
-    const whereClause = { ...clickDateWhere };
+    // Global breakdowns — only apply where if date filter exists
+    const groupByWhere = hasDateFilter ? { clickedAt: dateFilter } : undefined;
 
-    // Device breakdown
-    const deviceBreakdown = await prisma.clickEvent.groupBy({
-        by: ['deviceType'],
-        where: whereClause,
-        _count: true,
-    });
+    let deviceBreakdown = [];
+    let browserBreakdown = [];
+    let osBreakdown = [];
+    let referrerBreakdown = [];
 
-    // Browser breakdown
-    const browserBreakdown = await prisma.clickEvent.groupBy({
-        by: ['browser'],
-        where: whereClause,
-        _count: true,
-    });
+    try {
+        deviceBreakdown = await prisma.clickEvent.groupBy({
+            by: ['deviceType'],
+            ...(groupByWhere && { where: groupByWhere }),
+            _count: true,
+        });
+    } catch (e) {
+        logger.warn('Failed to fetch deviceBreakdown', e);
+    }
 
-    // OS breakdown
-    const osBreakdown = await prisma.clickEvent.groupBy({
-        by: ['os'],
-        where: whereClause,
-        _count: true,
-    });
+    try {
+        browserBreakdown = await prisma.clickEvent.groupBy({
+            by: ['browser'],
+            ...(groupByWhere && { where: groupByWhere }),
+            _count: true,
+        });
+    } catch (e) {
+        logger.warn('Failed to fetch browserBreakdown', e);
+    }
 
-    // Top referrers
-    const referrerBreakdown = await prisma.clickEvent.groupBy({
-        by: ['referrer'],
-        where: {
-            ...whereClause,
-            referrer: { not: null },
-        },
-        _count: true,
-        orderBy: { _count: { referrer: 'desc' } },
-        take: 10,
-    });
+    try {
+        osBreakdown = await prisma.clickEvent.groupBy({
+            by: ['os'],
+            ...(groupByWhere && { where: groupByWhere }),
+            _count: true,
+        });
+    } catch (e) {
+        logger.warn('Failed to fetch osBreakdown', e);
+    }
+
+    try {
+        referrerBreakdown = await prisma.clickEvent.groupBy({
+            by: ['referrer'],
+            where: {
+                referrer: { not: null },
+                ...(hasDateFilter && { clickedAt: dateFilter }),
+            },
+            _count: true,
+            orderBy: { _count: { referrer: 'desc' } },
+            take: 10,
+        });
+    } catch (e) {
+        logger.warn('Failed to fetch referrerBreakdown', e);
+    }
 
     return {
         totalUsers,
