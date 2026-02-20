@@ -3,6 +3,7 @@
 // ===========================================
 
 import prisma from '../config/database.js';
+import config from '../config/index.js';
 import * as auditService from '../services/audit.service.js';
 import * as analyticsService from '../services/analytics.service.js';
 import { formatResponse, createPaginationMeta } from '../utils/helpers.js';
@@ -299,6 +300,7 @@ export const exportLinks = async (req, res, next) => {
             res.setHeader('Content-Disposition', 'attachment; filename="links-export.json"');
             return res.json(links.map(link => ({
                 code: link.code,
+                shortUrl: `${config.domains.shortlink}/${link.code}`,
                 destinationUrl: link.destinationUrl,
                 title: link.title,
                 owner: link.user?.username,
@@ -312,9 +314,9 @@ export const exportLinks = async (req, res, next) => {
         }
 
         // CSV format
-        const csvHeader = 'Code,Destination URL,Title,Owner,Owner Email,Clicks,Active,Starts At,Expires At,Created At\n';
+        const csvHeader = 'Code,Short URL,Destination URL,Title,Owner,Owner Email,Clicks,Active,Starts At,Expires At,Created At\n';
         const csvRows = links.map(link =>
-            `"${link.code}","${link.destinationUrl}","${link.title || ''}","${link.user?.username || ''}","${link.user?.email || ''}",${link.clickCount},${link.isActive},"${link.startsAt || ''}","${link.expiresAt || ''}","${link.createdAt}"`
+            `"${link.code}","${config.domains.shortlink}/${link.code}","${link.destinationUrl}","${link.title || ''}","${link.user?.username || ''}","${link.user?.email || ''}",${link.clickCount},${link.isActive},"${link.startsAt || ''}","${link.expiresAt || ''}","${link.createdAt}"`
         ).join('\n');
 
         res.setHeader('Content-Type', 'text/csv');

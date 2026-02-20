@@ -3,6 +3,7 @@
 // ===========================================
 
 import prisma from '../config/database.js';
+import config from '../config/index.js';
 import * as linksService from '../services/links.service.js';
 import * as qrcodeService from '../services/qrcode.service.js';
 import { formatResponse } from '../utils/helpers.js';
@@ -168,6 +169,7 @@ export const exportLinks = async (req, res, next) => {
             res.setHeader('Content-Disposition', 'attachment; filename="my-links-export.json"');
             return res.json(links.map(link => ({
                 code: link.code,
+                shortUrl: `${config.domains.shortlink}/${link.code}`,
                 destinationUrl: link.destinationUrl,
                 title: link.title,
                 clickCount: link.clickCount,
@@ -179,9 +181,9 @@ export const exportLinks = async (req, res, next) => {
         }
 
         // CSV format
-        const csvHeader = 'Code,Destination URL,Title,Clicks,Active,Starts At,Expires At,Created At\n';
+        const csvHeader = 'Code,Short URL,Destination URL,Title,Clicks,Active,Starts At,Expires At,Created At\n';
         const csvRows = links.map(link =>
-            `"${link.code}","${link.destinationUrl}","${link.title || ''}",${link.clickCount},${link.isActive},"${link.startsAt || ''}","${link.expiresAt || ''}","${link.createdAt}"`
+            `"${link.code}","${config.domains.shortlink}/${link.code}","${link.destinationUrl}","${link.title || ''}",${link.clickCount},${link.isActive},"${link.startsAt || ''}","${link.expiresAt || ''}","${link.createdAt}"`
         ).join('\n');
 
         res.setHeader('Content-Type', 'text/csv');
