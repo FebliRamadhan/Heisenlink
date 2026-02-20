@@ -83,7 +83,8 @@ export function BulkImportDialog() {
         // Parse data rows
         for (let i = 1; i < lines.length; i++) {
             const line = lines[i].trim()
-            if (!line) continue
+            // Skip empty lines, whitespace-only lines, and comma-only lines
+            if (!line || /^[,\s]*$/.test(line)) continue
 
             const cols = line.split(",").map(c => c.trim().replace(/^"|"$/g, ""))
             const url = cols[urlIdx]

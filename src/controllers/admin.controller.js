@@ -251,52 +251,9 @@ export const getGlobalAnalytics = async (req, res, next) => {
     try {
         const { from, to } = req.query;
 
-        const dateFilter = {};
-        if (from) dateFilter.gte = new Date(from);
-        if (to) dateFilter.lte = new Date(to);
+        const overview = await analyticsService.getGlobalOverview({ from, to });
 
-        // Get counts
-        const [totalUsers, activeUsers, totalLinks, totalClicks, recentUsers] = await Promise.all([
-            prisma.user.count(),
-            prisma.user.count({ where: { isActive: true } }),
-            prisma.shortLink.count(),
-            prisma.clickEvent.count({
-                where: Object.keys(dateFilter).length > 0 ? { clickedAt: dateFilter } : undefined,
-            }),
-            prisma.user.findMany({
-                orderBy: { createdAt: 'desc' },
-                take: 5,
-                select: {
-                    username: true,
-                    displayName: true,
-                    createdAt: true,
-                },
-            }),
-        ]);
-
-        // Top users by links
-        const topUsersByLinks = await prisma.user.findMany({
-            select: {
-                username: true,
-                displayName: true,
-                _count: { select: { shortLinks: true } },
-            },
-            orderBy: { shortLinks: { _count: 'desc' } },
-            take: 5,
-        });
-
-        res.json(formatResponse({
-            totalUsers,
-            activeUsers,
-            totalLinks,
-            totalClicks,
-            recentUsers,
-            topUsersByLinks: topUsersByLinks.map(u => ({
-                username: u.username,
-                displayName: u.displayName,
-                linksCount: u._count.shortLinks,
-            })),
-        }));
+        res.json(formatResponse(overview));
     } catch (error) {
         next(error);
     }

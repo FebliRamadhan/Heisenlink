@@ -7,6 +7,7 @@ import * as linksController from '../controllers/links.controller.js';
 import { validateBody, validateParams, validateQuery } from '../middleware/validate.middleware.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { rateLimiters } from '../middleware/rateLimiter.middleware.js';
+import { z } from 'zod';
 import {
     createLinkSchema,
     updateLinkSchema,
@@ -58,6 +59,21 @@ router.post(
     '/bulk',
     validateBody(bulkCreateSchema),
     linksController.bulkCreate
+);
+
+/**
+ * @route   GET /api/links/export
+ * @desc    Export user's links as CSV or JSON
+ * @access  Private
+ */
+const exportQuerySchema = z.object({
+    format: z.enum(['csv', 'json']).default('csv'),
+});
+
+router.get(
+    '/export',
+    validateQuery(exportQuerySchema),
+    linksController.exportLinks
 );
 
 /**

@@ -6,10 +6,16 @@ import { LinksTable } from "@/components/links/links-table"
 import { LinksTableSkeleton } from "@/components/links/links-table-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, Search } from "lucide-react"
+import { Plus, Search, Download } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { useDebounce } from "@/hooks/use-debounce"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 import { BulkImportDialog } from "@/components/links/bulk-import-dialog"
 
@@ -32,10 +38,24 @@ export default function LinksPage() {
         placeholderData: (previousData: any) => previousData,
     })
 
-    // Reset pagination when search changes
-    if (search !== debouncedSearch) {
-        // This effect runs during render if search changed but debounce hasn't
-        // We might want useLayoutEffect or just wait for debounce
+    const handleExport = async (format: "csv" | "json") => {
+        try {
+            const res = await api.get("/links/export", {
+                params: { format },
+                responseType: "blob",
+            })
+            const blob = new Blob([res.data], {
+                type: format === "csv" ? "text/csv" : "application/json",
+            })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = `my-links-export.${format}`
+            a.click()
+            URL.revokeObjectURL(url)
+        } catch (error) {
+            console.error("Export failed:", error)
+        }
     }
 
     return (
@@ -43,6 +63,21 @@ export default function LinksPage() {
             <div className="flex items-center justify-between space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight">Links</h2>
                 <div className="flex items-center space-x-2">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                <Download className="mr-2 h-4 w-4" /> Export
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => handleExport("csv")}>
+                                Export as CSV
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleExport("json")}>
+                                Export as JSON
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     <BulkImportDialog />
                     <Link href="/dashboard/links/new">
                         <Button>
@@ -75,3 +110,4 @@ export default function LinksPage() {
         </div>
     )
 }
+
