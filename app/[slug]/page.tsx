@@ -1,10 +1,116 @@
 import { redirect } from "next/navigation"
+import type { Metadata } from "next"
 import { BioPreview } from "@/components/bio/bio-preview"
 import { ConfirmationPage } from "@/components/public/confirmation-page"
+import { themes as themeConstants } from "@/src/constants/themes"
 
 // SSR must use internal URL (Docker network) to reach backend directly
 // NOT the public URL which routes back through nginx → frontend (loop!)
 const API_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+const PUBLIC_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.SHORTLINK_DOMAIN || 'http://localhost:3000'
+
+/**
+ * Dynamic meta tags for bio pages and shortlink confirmation pages.
+ * - Bio page: uses title, bio description, and avatar as OG image
+ * - Shortlink: uses link title and destination domain info
+ * - Fallback: default Heisenlink branding
+ */
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+    const { slug } = params
+
+    const defaultMeta: Metadata = {
+        title: `${slug} - Heisenlink`,
+        description: 'Heisenlink - Platform shortlink dan bio page resmi Kementerian PANRB',
+        openGraph: {
+            title: `${slug} - Heisenlink`,
+            description: 'Heisenlink - Platform shortlink dan bio page resmi Kementerian PANRB',
+            siteName: 'Heisenlink',
+            type: 'website',
+            images: [{ url: `${PUBLIC_URL}/og-image.png`, width: 1200, height: 630 }],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${slug} - Heisenlink`,
+            description: 'Heisenlink - Platform shortlink dan bio page resmi Kementerian PANRB',
+            images: [`${PUBLIC_URL}/og-image.png`],
+        },
+    }
+
+    // Try bio page first
+    try {
+        const res = await fetch(`${API_URL}/api/bio/${slug}`, { cache: 'no-store' })
+        if (res.ok) {
+            const data = await res.json()
+            const bio = data.data
+            const title = bio.title ? `${bio.title} - Heisenlink` : defaultMeta.title as string
+            const description = bio.bio || `Kunjungi halaman bio ${bio.title || slug} di Heisenlink`
+            const images = bio.avatarUrl
+                ? [{ url: bio.avatarUrl.startsWith('http') ? bio.avatarUrl : `${PUBLIC_URL}${bio.avatarUrl}`, width: 400, height: 400 }]
+                : [{ url: `${PUBLIC_URL}/og-image.png`, width: 1200, height: 630 }]
+
+            return {
+                title,
+                description,
+                openGraph: {
+                    title,
+                    description,
+                    siteName: 'Heisenlink',
+                    type: 'profile',
+                    url: `${PUBLIC_URL}/${slug}`,
+                    images,
+                },
+                twitter: {
+                    card: bio.avatarUrl ? 'summary' : 'summary_large_image',
+                    title,
+                    description,
+                    images: images.map(i => i.url),
+                },
+            }
+        }
+    } catch {
+        // Bio check failed, try shortlink below
+    }
+
+    // Try shortlink
+    try {
+        const res = await fetch(`${API_URL}/${slug}/resolve`, { cache: 'no-store' })
+        if (res.ok) {
+            const data = await res.json()
+            const link = data.data
+            if (link.showConfirmation && link.title) {
+                const title = `${link.title} - Heisenlink`
+                let domain = ''
+                try { domain = new URL(link.destinationUrl).hostname } catch { }
+                const description = domain
+                    ? `Menuju ke ${domain} via Heisenlink`
+                    : 'Redirect via Heisenlink'
+
+                return {
+                    title,
+                    description,
+                    openGraph: {
+                        title,
+                        description,
+                        siteName: 'Heisenlink',
+                        type: 'website',
+                        url: `${PUBLIC_URL}/${slug}`,
+                        images: [{ url: `${PUBLIC_URL}/og-image.png`, width: 1200, height: 630 }],
+                    },
+                    twitter: {
+                        card: 'summary',
+                        title,
+                        description,
+                        images: [`${PUBLIC_URL}/og-image.png`],
+                    },
+                }
+            }
+        }
+    } catch {
+        // Shortlink check failed
+    }
+
+    return defaultMeta
+}
 
 // This is a Server Component that handles public redirects/bio pages
 export default async function PublicPage({ params }: { params: { slug: string } }) {
@@ -94,20 +200,11 @@ export default async function PublicPage({ params }: { params: { slug: string } 
 }
 
 function PublicBioView({ bioPage }: { bioPage: any }) {
-    const THEMES: Record<string, any> = {
-        light: { background: '#ffffff', text: '#1f2937' },
-        dark: { background: '#1f2937', text: '#f9fafb' },
-        gradient: { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', text: '#ffffff' },
-        ocean: { background: 'linear-gradient(135deg, #0077b6 0%, #00b4d8 100%)', text: '#ffffff' },
-        sunset: { background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', text: '#ffffff' },
-        forest: { background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', text: '#ffffff' },
-        midnight: { background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)', text: '#ffffff' },
-        rose: { background: 'linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%)', text: '#1f2937' },
-        neon: { background: '#0a0a0a', text: '#39ff14' },
-        minimal: { background: '#fafafa', text: '#333333' },
-        aurora: { background: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 50%, #7209b7 100%)', text: '#ffffff' },
-        candy: { background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #feada6 100%)', text: '#4a154b' },
-        corporate: { background: '#1a1a2e', text: '#e0e0e0' },
+    // Build THEMES from shared constants for single source of truth
+    const THEMES: Record<string, { background: string; text: string }> = {}
+    for (const [key, value] of Object.entries(themeConstants)) {
+        const t = value as any
+        THEMES[key] = { background: t.background, text: t.text }
     }
 
     const PLATFORM_ICONS: Record<string, string> = {
@@ -132,7 +229,7 @@ function PublicBioView({ bioPage }: { bioPage: any }) {
 
                 <div className="text-center space-y-2">
                     <h1 className="text-3xl font-bold">{bioPage.title}</h1>
-                    <p className="text-lg opacity-90">{bioPage.bio}</p>
+                    <p className="text-lg opacity-90 line-clamp-3">{bioPage.bio}</p>
                 </div>
 
                 {/* Social Links */}

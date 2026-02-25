@@ -1,30 +1,18 @@
 "use client"
 
 import { Card } from "@/components/ui/card"
-import { themes } from "@/src/constants/themes" // Import theme constants from src
+import { themes as themeConstants } from "@/src/constants/themes"
 import { cn } from "@/lib/utils"
-// We need to import the themes object. Since src is in root, we can alias or relative import.
-// TS config has @ -> ./
-// So @/src/constants/themes is valid if src is in root.
-// Or just copy definitions if imports fail.
-// Let's assume alias works or relative.
-
-// Wait, standard nextjs setup usually has src/app or app/. Only one.
-// Here we have src/ (backend) and app/ (frontend nextjs) in root.
-// My tsconfig has paths: "@/*": ["./*"]
-// So "@/src" should work.
 
 interface BioPreviewProps {
     bioPage: any
 }
 
-// Temporary theme map until I verify import
-const THEMES: Record<string, any> = {
-    light: { background: '#ffffff', text: '#1f2937' },
-    dark: { background: '#1f2937', text: '#f9fafb' },
-    gradient: { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', text: '#ffffff' },
-    ocean: { background: 'linear-gradient(135deg, #0077b6 0%, #00b4d8 100%)', text: '#ffffff' },
-    // ... others
+// Build a preview-friendly THEMES map from the backend theme constants
+const THEMES: Record<string, { background: string; text: string }> = {}
+for (const [key, value] of Object.entries(themeConstants)) {
+    const t = value as any
+    THEMES[key] = { background: t.background, text: t.text }
 }
 
 export function BioPreview({ bioPage }: BioPreviewProps) {
@@ -55,7 +43,7 @@ export function BioPreview({ bioPage }: BioPreviewProps) {
                     </div>
                     <div className="text-center space-y-2">
                         <h1 className="text-xl font-bold font-heading">{bioPage.title}</h1>
-                        <p className="text-sm opacity-90 max-w-[280px]">{bioPage.bio}</p>
+                        <p className="text-sm opacity-90 max-w-[280px] line-clamp-3">{bioPage.bio}</p>
                     </div>
 
                     {/* Social Links Icons */}
@@ -106,4 +94,3 @@ export function BioPreview({ bioPage }: BioPreviewProps) {
         </div>
     )
 }
-

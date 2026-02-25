@@ -31,7 +31,10 @@ export const updateBioPageSchema = z.object({
         .boolean()
         .optional(),
     socialLinks: z
-        .record(z.string())
+        .array(z.object({
+            platform: z.string(),
+            url: z.string(),
+        }))
         .optional()
         .nullable(),
 });
