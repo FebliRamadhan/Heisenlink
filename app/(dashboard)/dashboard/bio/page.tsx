@@ -22,7 +22,7 @@ import { Loader2 } from "lucide-react"
 const bioPageSchema = z.object({
     title: z.string().max(100).optional(),
     bio: z.string().max(500).optional(),
-    slug: z.string().min(3).max(50).optional(),
+    slug: z.string().min(3).max(50).regex(/^[a-z0-9_-]+$/, "URL can only contain lowercase letters, numbers, hyphens, and underscores").optional(),
     theme: z.string().optional(),
     isPublished: z.boolean().optional(),
 })
@@ -96,8 +96,17 @@ function BioForm({ bioPage }: { bioPage: any }) {
             queryClient.invalidateQueries({ queryKey: ["bio"] })
             toast({ title: "Bio page updated" })
         },
-        onError: () => {
-            toast({ variant: "destructive", title: "Failed to update" })
+        onError: (error: any) => {
+            const data = error.response?.data;
+            const details = data?.error?.details || data?.details;
+            const detailMsg = Array.isArray(details) ? details[0]?.message : null;
+            const serverMessage = detailMsg || data?.message || data?.error?.message;
+
+            toast({
+                variant: "destructive",
+                title: "Failed to update",
+                description: serverMessage || "Something went wrong"
+            })
         }
     })
 

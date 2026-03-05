@@ -104,27 +104,34 @@ export const getOverview = async (userId, dateRange = {}) => {
     let clicksByDay = [];
 
     if (linkIds.length > 0 || bioLinkIds.length > 0) {
-        // Explicitly cast to uuid[] for Postgres
-        // Note: Prisma raw query handling of arrays can be tricky. 
-        // We'll use a safer approach if possible, or ensure arrays are valid.
-
         try {
-            clicksByDay = await prisma.$queryRaw`
+            // Build the query conditions dynamically to avoid IN (null)
+            const conditions = [];
+            if (linkIds.length > 0) {
+                conditions.push(Prisma.sql`short_link_id IN (${Prisma.join(linkIds)})`);
+            }
+            if (bioLinkIds.length > 0) {
+                conditions.push(Prisma.sql`bio_link_id IN (${Prisma.join(bioLinkIds)})`);
+            }
+
+            const whereClause = Prisma.sql`WHERE (${Prisma.join(conditions, ' OR ')}) AND clicked_at >= ${thirtyDaysAgo}`;
+
+            const rows = await prisma.$queryRaw`
                 SELECT 
                   DATE(clicked_at) as date,
                   COUNT(*) as clicks
                 FROM click_events
-                WHERE (
-                    short_link_id IN (${Object.keys(linkIds).length > 0 ? Prisma.join(linkIds) : null})
-                    OR 
-                    bio_link_id IN (${Object.keys(bioLinkIds).length > 0 ? Prisma.join(bioLinkIds) : null})
-                )
-                AND clicked_at >= ${thirtyDaysAgo}
+                ${whereClause}
                 GROUP BY DATE(clicked_at)
                 ORDER BY date DESC
             `;
+
+            // Explicitly cast BigInt counts to Number for JSON serialization
+            clicksByDay = rows.map(r => ({
+                date: r.date,
+                clicks: Number(r.clicks)
+            }));
         } catch (e) {
-            // Fallback or ignore if query fails
             logger.warn('Failed to fetch clicksByDay', e);
         }
     }
@@ -262,7 +269,7 @@ export const getGlobalOverview = async (dateRange = {}) => {
 
     let clicksByDay = [];
     try {
-        clicksByDay = await prisma.$queryRaw`
+        const rows = await prisma.$queryRaw`
             SELECT 
               DATE(clicked_at) as date,
               COUNT(*) as clicks
@@ -271,6 +278,12 @@ export const getGlobalOverview = async (dateRange = {}) => {
             GROUP BY DATE(clicked_at)
             ORDER BY date DESC
         `;
+
+        // Explicitly cast BigInt counts to Number for JSON serialization
+        clicksByDay = rows.map(r => ({
+            date: r.date,
+            clicks: Number(r.clicks)
+        }));
     } catch (e) {
         logger.warn('Failed to fetch global clicksByDay', e);
     }
