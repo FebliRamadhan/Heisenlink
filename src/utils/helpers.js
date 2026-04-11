@@ -84,7 +84,8 @@ export const createPaginationMeta = (total, page, limit) => {
  */
 export const isValidUrl = (url) => {
     try {
-        new URL(url);
+        const parsed = new URL(url);
+        if (!['http:', 'https:'].includes(parsed.protocol)) return false;
         return true;
     } catch {
         return false;
@@ -120,6 +121,20 @@ export const extractDomain = (url) => {
     } catch {
         return null;
     }
+};
+
+/**
+ * Escape a value for safe CSV export (prevents CSV injection)
+ * @param {any} value - Value to escape
+ * @returns {string} - Escaped CSV field
+ */
+export const escapeCsvField = (value) => {
+    if (value === null || value === undefined) return '';
+    const str = String(value);
+    // Prefix formula-triggering characters with a single quote to neutralize them
+    const sanitized = /^[=+\-@\t\r]/.test(str) ? `'${str}` : str;
+    // Escape double quotes and wrap in quotes
+    return `"${sanitized.replace(/"/g, '""')}"`;
 };
 
 /**

@@ -38,6 +38,7 @@ router.post(
  */
 router.post(
     '/refresh',
+    rateLimiters.refresh,
     validateBody(refreshTokenSchema),
     authController.refreshToken
 );

@@ -129,6 +129,7 @@ router.get(
  */
 router.post(
     '/:id/verify-password',
+    rateLimiters.verifyPassword,
     validateParams(linkIdSchema),
     validateBody(verifyPasswordSchema),
     linksController.verifyPassword

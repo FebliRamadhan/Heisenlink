@@ -6,7 +6,7 @@ import prisma from '../config/database.js';
 import config from '../config/index.js';
 import * as linksService from '../services/links.service.js';
 import * as qrcodeService from '../services/qrcode.service.js';
-import { formatResponse } from '../utils/helpers.js';
+import { formatResponse, escapeCsvField } from '../utils/helpers.js';
 
 /**
  * Get user's links
@@ -183,7 +183,17 @@ export const exportLinks = async (req, res, next) => {
         // CSV format
         const csvHeader = 'Code,Short URL,Destination URL,Title,Clicks,Active,Starts At,Expires At,Created At\n';
         const csvRows = links.map(link =>
-            `"${link.code}","${config.domains.shortlink}/${link.code}","${link.destinationUrl}","${link.title || ''}",${link.clickCount},${link.isActive},"${link.startsAt || ''}","${link.expiresAt || ''}","${link.createdAt}"`
+            [
+                escapeCsvField(link.code),
+                escapeCsvField(`${config.domains.shortlink}/${link.code}`),
+                escapeCsvField(link.destinationUrl),
+                escapeCsvField(link.title),
+                escapeCsvField(link.clickCount),
+                escapeCsvField(link.isActive),
+                escapeCsvField(link.startsAt),
+                escapeCsvField(link.expiresAt),
+                escapeCsvField(link.createdAt),
+            ].join(',')
         ).join('\n');
 
         res.setHeader('Content-Type', 'text/csv');

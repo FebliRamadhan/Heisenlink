@@ -98,6 +98,22 @@ export const rateLimiters = {
         keyPrefix: 'rate:create-link',
     }),
 
+    // Limit for token refresh
+    refresh: createRateLimiter({
+        windowMs: 60000, // 1 minute
+        max: 10,
+        keyPrefix: 'rate:refresh',
+        message: 'Too many refresh attempts, please try again later',
+    }),
+
+    // Limit for password verification (link protection)
+    verifyPassword: createRateLimiter({
+        windowMs: 60000, // 1 minute
+        max: 5,
+        keyPrefix: 'rate:verify-pw',
+        message: 'Too many password attempts, please try again later',
+    }),
+
     // Limit for redirects (higher limit)
     redirect: createRateLimiter({
         windowMs: 60000, // 1 minute

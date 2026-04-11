@@ -14,7 +14,7 @@ const config = {
         env: process.env.NODE_ENV || 'development',
         port: parseInt(process.env.PORT, 10) || 3000,
         url: process.env.APP_URL || 'http://localhost:3000',
-        secret: process.env.APP_SECRET || 'change-this-secret',
+        secret: process.env.APP_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'dev-only-secret'),
     },
 
     // Domain Configuration
@@ -36,7 +36,7 @@ const config = {
 
     // JWT
     jwt: {
-        secret: process.env.JWT_SECRET || 'jwt-secret-change-this',
+        secret: process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'dev-only-jwt-secret'),
         expiresIn: process.env.JWT_EXPIRES_IN || '24h',
         refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
     },
@@ -83,7 +83,7 @@ const config = {
 
 // Validate required configuration
 const validateConfig = () => {
-    const required = ['database.url'];
+    const required = ['database.url', 'app.secret', 'jwt.secret'];
     const missing = [];
 
     for (const key of required) {

@@ -6,7 +6,7 @@ import prisma from '../config/database.js';
 import config from '../config/index.js';
 import * as auditService from '../services/audit.service.js';
 import * as analyticsService from '../services/analytics.service.js';
-import { formatResponse, createPaginationMeta } from '../utils/helpers.js';
+import { formatResponse, createPaginationMeta, escapeCsvField } from '../utils/helpers.js';
 import { errors } from '../middleware/error.middleware.js';
 import logger from '../utils/logger.js';
 
@@ -316,7 +316,19 @@ export const exportLinks = async (req, res, next) => {
         // CSV format
         const csvHeader = 'Code,Short URL,Destination URL,Title,Owner,Owner Email,Clicks,Active,Starts At,Expires At,Created At\n';
         const csvRows = links.map(link =>
-            `"${link.code}","${config.domains.shortlink}/${link.code}","${link.destinationUrl}","${link.title || ''}","${link.user?.username || ''}","${link.user?.email || ''}",${link.clickCount},${link.isActive},"${link.startsAt || ''}","${link.expiresAt || ''}","${link.createdAt}"`
+            [
+                escapeCsvField(link.code),
+                escapeCsvField(`${config.domains.shortlink}/${link.code}`),
+                escapeCsvField(link.destinationUrl),
+                escapeCsvField(link.title),
+                escapeCsvField(link.user?.username),
+                escapeCsvField(link.user?.email),
+                escapeCsvField(link.clickCount),
+                escapeCsvField(link.isActive),
+                escapeCsvField(link.startsAt),
+                escapeCsvField(link.expiresAt),
+                escapeCsvField(link.createdAt),
+            ].join(',')
         ).join('\n');
 
         res.setHeader('Content-Type', 'text/csv');
@@ -371,7 +383,14 @@ export const exportAuditLogs = async (req, res, next) => {
         // CSV format
         const csvHeader = 'User,Action,Entity Type,Entity ID,IP Address,Created At\n';
         const csvRows = logs.map(log =>
-            `"${log.user?.username || ''}","${log.action}","${log.entityType}","${log.entityId || ''}","${log.ipAddress || ''}","${log.createdAt}"`
+            [
+                escapeCsvField(log.user?.username),
+                escapeCsvField(log.action),
+                escapeCsvField(log.entityType),
+                escapeCsvField(log.entityId),
+                escapeCsvField(log.ipAddress),
+                escapeCsvField(log.createdAt),
+            ].join(',')
         ).join('\n');
 
         res.setHeader('Content-Type', 'text/csv');
