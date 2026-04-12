@@ -25,6 +25,8 @@ model User {
   role          Role      @default(USER)
   isActive      Boolean   @default(true) @map("is_active")
   ldapDn        String?   @map("ldap_dn")
+  ssoProvider   String?   @map("sso_provider")
+  ssoProviderId String?   @map("sso_provider_id")
   lastLoginAt   DateTime? @map("last_login_at")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
@@ -34,6 +36,7 @@ model User {
   bioPage       BioPage?
   auditLogs     AuditLog[]
 
+  @@unique([ssoProvider, ssoProviderId])
   @@map("users")
 }
 

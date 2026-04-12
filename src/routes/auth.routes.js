@@ -10,7 +10,8 @@ import { rateLimiters } from '../middleware/rateLimiter.middleware.js';
 import {
     loginSchema,
     refreshTokenSchema,
-    updatePasswordSchema
+    updatePasswordSchema,
+    ssoCallbackSchema
 } from '../validators/auth.validator.js';
 
 const router = Router();
@@ -41,6 +42,29 @@ router.post(
     rateLimiters.refresh,
     validateBody(refreshTokenSchema),
     authController.refreshToken
+);
+
+// ===========================================
+// SSO Routes
+// ===========================================
+
+/**
+ * @route   GET /api/auth/sso/config
+ * @desc    Get SSO configuration for frontend
+ * @access  Public
+ */
+router.get('/sso/config', authController.getSsoConfig);
+
+/**
+ * @route   POST /api/auth/sso/callback
+ * @desc    Handle SSO callback - exchange code for tokens
+ * @access  Public
+ */
+router.post(
+    '/sso/callback',
+    rateLimiters.auth,
+    validateBody(ssoCallbackSchema),
+    authController.ssoCallback
 );
 
 // ===========================================

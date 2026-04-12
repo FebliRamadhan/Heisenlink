@@ -41,6 +41,19 @@ const config = {
         refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
     },
 
+    // SSO (SADA SSO - OAuth2 PKCE)
+    sso: {
+        enabled: process.env.SSO_ENABLED === 'true',
+        clientId: process.env.SSO_CLIENT_ID,
+        clientSecret: process.env.SSO_CLIENT_SECRET,
+        authorizeUrl: process.env.SSO_AUTHORIZE_URL || 'http://localhost:3002/authorize',
+        tokenUrl: process.env.SSO_TOKEN_URL || 'http://localhost:3001/oauth/token',
+        userInfoUrl: process.env.SSO_USERINFO_URL || 'http://localhost:3001/oauth/userinfo',
+        logoutUrl: process.env.SSO_LOGOUT_URL || 'http://localhost:3001/oauth/logout',
+        redirectUri: process.env.SSO_REDIRECT_URI || 'http://localhost:3000/callback',
+        scopes: process.env.SSO_SCOPES || 'openid profile email offline_access',
+    },
+
     // LDAP
     ldap: {
         enabled: process.env.LDAP_ENABLED === 'true',
