@@ -7,23 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ToastAction } from "@/components/ui/toast"
 import api from "@/lib/api"
-import { Plus, Trash2, GripVertical } from "lucide-react"
-
-const SOCIAL_PLATFORMS = [
-    { id: "instagram", label: "Instagram", placeholder: "https://instagram.com/username", icon: "📷" },
-    { id: "twitter", label: "X (Twitter)", placeholder: "https://x.com/username", icon: "𝕏" },
-    { id: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/@username", icon: "🎵" },
-    { id: "youtube", label: "YouTube", placeholder: "https://youtube.com/@channel", icon: "▶️" },
-    { id: "github", label: "GitHub", placeholder: "https://github.com/username", icon: "🐙" },
-    { id: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/username", icon: "💼" },
-    { id: "facebook", label: "Facebook", placeholder: "https://facebook.com/username", icon: "📘" },
-    { id: "whatsapp", label: "WhatsApp", placeholder: "https://wa.me/628xxx", icon: "💬" },
-    { id: "telegram", label: "Telegram", placeholder: "https://t.me/username", icon: "✈️" },
-    { id: "email", label: "Email", placeholder: "mailto:you@example.com", icon: "📧" },
-    { id: "website", label: "Website", placeholder: "https://yoursite.com", icon: "🌐" },
-    { id: "spotify", label: "Spotify", placeholder: "https://open.spotify.com/user/...", icon: "🎧" },
-]
+import { Plus, Trash2 } from "lucide-react"
+import { SOCIAL_PLATFORMS, SocialIcon, getSocialPlatform } from "@/components/bio/social-icons"
 
 interface SocialLink {
     platform: string
@@ -46,7 +33,6 @@ export function SocialLinksEditor({ socialLinks: initialLinks }: SocialLinksEdit
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["bio"] })
-            toast({ title: "Social links updated" })
         },
         onError: () => {
             toast({ variant: "destructive", title: "Failed to save social links" })
@@ -70,16 +56,33 @@ export function SocialLinksEditor({ socialLinks: initialLinks }: SocialLinksEdit
     }
 
     const removeLink = (index: number) => {
+        const removed = links[index]
         const updated = links.filter((_, i) => i !== index)
         setLinks(updated)
         mutation.mutate(updated)
+
+        const platform = getSocialPlatform(removed.platform)
+        toast({
+            title: `${platform?.label || removed.platform} removed`,
+            action: (
+                <ToastAction
+                    altText="Undo removal"
+                    onClick={() => {
+                        const restored = [...updated]
+                        restored.splice(index, 0, removed)
+                        setLinks(restored)
+                        mutation.mutate(restored)
+                    }}
+                >
+                    Undo
+                </ToastAction>
+            ),
+        })
     }
 
     const saveLinks = () => {
         mutation.mutate(links)
     }
-
-    const getPlatform = (id: string) => SOCIAL_PLATFORMS.find(p => p.id === id)
 
     // Available platforms (not yet added)
     const availablePlatforms = SOCIAL_PLATFORMS.filter(
@@ -91,22 +94,22 @@ export function SocialLinksEditor({ socialLinks: initialLinks }: SocialLinksEdit
             <CardHeader>
                 <CardTitle>Social Links</CardTitle>
                 <CardDescription>
-                    Add your social media profiles to display on your bio page
+                    Add your social media profiles to display on your bio page. Changes save automatically.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 {/* Current Links */}
                 {links.length > 0 && (
-                    <div className="space-y-3">
+                    <ul className="space-y-3 list-none p-0 m-0">
                         {links.map((link, index) => {
-                            const platform = getPlatform(link.platform)
+                            const platform = getSocialPlatform(link.platform)
                             return (
-                                <div
+                                <li
                                     key={link.platform}
                                     className="flex items-center gap-3 p-3 rounded-lg border bg-card"
                                 >
-                                    <span className="text-xl w-8 text-center flex-shrink-0 emoji-icon">
-                                        {platform?.icon}
+                                    <span className="w-8 h-8 flex items-center justify-center flex-shrink-0 rounded-md bg-muted text-muted-foreground">
+                                        <SocialIcon platform={link.platform} className="h-4 w-4" ariaHidden />
                                     </span>
                                     <div className="flex-1 min-w-0">
                                         <Label className="text-xs text-muted-foreground mb-1 block">
@@ -118,6 +121,7 @@ export function SocialLinksEditor({ socialLinks: initialLinks }: SocialLinksEdit
                                             onBlur={saveLinks}
                                             placeholder={platform?.placeholder}
                                             className="h-8 text-sm"
+                                            aria-label={`${platform?.label} URL`}
                                         />
                                     </div>
                                     <Button
@@ -127,12 +131,12 @@ export function SocialLinksEditor({ socialLinks: initialLinks }: SocialLinksEdit
                                         onClick={() => removeLink(index)}
                                         aria-label={`Remove ${platform?.label}`}
                                     >
-                                        <Trash2 className="h-4 w-4" />
+                                        <Trash2 className="h-4 w-4" aria-hidden="true" />
                                     </Button>
-                                </div>
+                                </li>
                             )
                         })}
-                    </div>
+                    </ul>
                 )}
 
                 {/* Empty State */}
@@ -156,7 +160,7 @@ export function SocialLinksEditor({ socialLinks: initialLinks }: SocialLinksEdit
                                     className="justify-start gap-2 h-9"
                                     onClick={() => addPlatform(platform.id)}
                                 >
-                                    <span className="text-base emoji-icon">{platform.icon}</span>
+                                    <SocialIcon platform={platform.id} className="h-4 w-4" ariaHidden />
                                     <span className="text-xs">{platform.label}</span>
                                 </Button>
                             ))}
@@ -180,19 +184,8 @@ export function SocialLinksEditor({ socialLinks: initialLinks }: SocialLinksEdit
                         className="w-full"
                         onClick={() => setShowPlatformPicker(true)}
                     >
-                        <Plus className="h-4 w-4 mr-2" />
+                        <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
                         Add Social Link
-                    </Button>
-                )}
-
-                {/* Save Button */}
-                {links.length > 0 && (
-                    <Button
-                        onClick={saveLinks}
-                        disabled={mutation.isPending}
-                        className="w-full"
-                    >
-                        {mutation.isPending ? "Saving..." : "Save Social Links"}
                     </Button>
                 )}
             </CardContent>

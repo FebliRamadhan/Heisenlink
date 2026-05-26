@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation"
 import type { Metadata } from "next"
-import { BioPreview } from "@/components/bio/bio-preview"
 import { ConfirmationPage } from "@/components/public/confirmation-page"
 import { themes as themeConstants } from "@/src/constants/themes"
+import { SocialIcon, getSocialLabel } from "@/components/bio/social-icons"
 
 // SSR must use internal URL (Docker network) to reach backend directly
 // NOT the public URL which routes back through nginx → frontend (loop!)
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
     // Try bio page first
     try {
-        const res = await fetch(`${API_URL}/api/bio/${slug}`, { cache: 'no-store' })
+        const res = await fetch(`${API_URL}/api/bio/${slug}`, { next: { revalidate: 60, tags: [`bio:${slug}`] } })
         if (res.ok) {
             const data = await res.json()
             const bio = data.data
@@ -122,7 +122,7 @@ export default async function PublicPage({ params }: { params: { slug: string } 
     try {
         const bioUrl = `${API_URL}/api/bio/${slug}`
         console.log(`[SLUG] Checking bio: ${bioUrl}`)
-        const res = await fetch(bioUrl, { cache: 'no-store' })
+        const res = await fetch(bioUrl, { next: { revalidate: 60, tags: [`bio:${slug}`] } })
         console.log(`[SLUG] Bio response: ${res.status}`)
 
         if (res.ok) {
@@ -183,9 +183,7 @@ export default async function PublicPage({ params }: { params: { slug: string } 
             redirect('/too-many-requests')
         }
         if (res.status === 401) {
-            // Password protected - show not-found for now
-            // TODO: implement password entry page
-            redirect('/not-found')
+            redirect(`/password-protect/${slug}`)
         }
     } catch (e: any) {
         // CRITICAL: Next.js redirect() throws NEXT_REDIRECT error internally
@@ -207,79 +205,88 @@ function PublicBioView({ bioPage }: { bioPage: any }) {
         THEMES[key] = { background: t.background, text: t.text }
     }
 
-    const PLATFORM_ICONS: Record<string, string> = {
-        instagram: "📷", twitter: "𝕏", tiktok: "🎵", youtube: "▶️",
-        github: "🐙", linkedin: "💼", facebook: "📘", whatsapp: "💬",
-        telegram: "✈️", email: "📧", website: "🌐", spotify: "🎧",
-    }
-
     const theme = THEMES[bioPage.theme] || THEMES.gradient
 
     return (
-        <div
+        <main
             className="min-h-screen w-full flex flex-col items-center py-12 px-4"
             style={{ background: theme.background, color: theme.text }}
         >
             <div className="w-full max-w-md space-y-8 flex flex-col items-center">
                 <div className="w-32 h-32 rounded-full border-4 border-white/20 overflow-hidden bg-muted">
                     {bioPage.avatarUrl && (
-                        <img src={bioPage.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        <img
+                            src={bioPage.avatarUrl}
+                            alt={bioPage.title ? `${bioPage.title} profile picture` : "Profile picture"}
+                            width={128}
+                            height={128}
+                            fetchPriority="high"
+                            className="w-full h-full object-cover"
+                        />
                     )}
                 </div>
 
                 <div className="text-center space-y-2">
-                    <h1 className="text-3xl font-bold">{bioPage.title}</h1>
-                    <p className="text-lg opacity-90 line-clamp-3">{bioPage.bio}</p>
+                    <h1 className="text-3xl font-bold text-balance">{bioPage.title}</h1>
+                    {bioPage.bio && (
+                        <p className="text-lg opacity-90 line-clamp-3 text-pretty">{bioPage.bio}</p>
+                    )}
                 </div>
 
                 {/* Social Links */}
                 {bioPage.socialLinks?.length > 0 && (
-                    <div className="flex flex-wrap gap-3 justify-center">
-                        {bioPage.socialLinks.filter((s: any) => s.url).map((social: any) => (
-                            <a
-                                key={social.platform}
-                                href={social.url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="w-12 h-12 rounded-full flex items-center justify-center text-xl hover:scale-110 transition-transform"
-                                style={{
-                                    background: 'rgba(255, 255, 255, 0.2)',
-                                    backdropFilter: 'blur(10px)',
-                                    WebkitBackdropFilter: 'blur(10px)',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                                }}
-                                title={social.platform}
-                            >
-                                {PLATFORM_ICONS[social.platform] || "🔗"}
-                            </a>
-                        ))}
-                    </div>
+                    <ul className="flex flex-wrap gap-3 justify-center list-none p-0 m-0" aria-label="Social profiles">
+                        {bioPage.socialLinks.filter((s: any) => s.url).map((social: any) => {
+                            const label = getSocialLabel(social.platform)
+                            return (
+                                <li key={social.platform}>
+                                    <a
+                                        href={social.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="bio-surface w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-[var(--motion-base)] ease-[var(--ease-out)] hover:scale-110 focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                                        aria-label={`${label} (opens in new tab)`}
+                                    >
+                                        <SocialIcon platform={social.platform} className="h-5 w-5" ariaHidden />
+                                    </a>
+                                </li>
+                            )
+                        })}
+                    </ul>
                 )}
 
-                <div className="w-full space-y-4">
-                    {bioPage.links?.map((link: any) => (
-                        <a
-                            key={link.id}
-                            href={link.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="block w-full p-4 rounded-xl text-center font-bold text-lg transition-transform hover:scale-[1.02]"
-                            style={{
-                                background: 'rgba(255, 255, 255, 0.2)',
-                                backdropFilter: 'blur(10px)',
-                                WebkitBackdropFilter: 'blur(10px)',
-                                border: '1px solid rgba(255, 255, 255, 0.3)'
-                            }}
-                        >
-                            {link.title}
-                        </a>
-                    ))}
-                </div>
+                <nav aria-label={`${bioPage.title || "Profile"} links`} className="w-full">
+                    <ul className="w-full space-y-4 list-none p-0 m-0">
+                        {bioPage.links?.map((link: any, idx: number) => (
+                            <li key={link.id}>
+                                <a
+                                    href={`/api/bio/click/${link.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    data-href={link.url}
+                                    className={
+                                        idx === 0
+                                            ? "bio-surface-strong block w-full p-4 rounded-xl text-center font-bold text-lg transition-transform duration-[var(--motion-base)] ease-[var(--ease-out)] hover:scale-[1.02] focus-visible:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                                            : "bio-surface block w-full p-4 rounded-xl text-center font-bold text-lg transition-transform duration-[var(--motion-base)] ease-[var(--ease-out)] hover:scale-[1.02] focus-visible:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                                    }
+                                >
+                                    {link.title}
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+
+                {(!bioPage.links || bioPage.links.length === 0) && (
+                    <p className="bio-surface w-full p-6 rounded-xl text-center text-sm opacity-90">
+                        This profile hasn't added any links yet.
+                    </p>
+                )}
             </div>
 
             <div className="mt-12 text-sm opacity-60">
                 Powered by <span className="font-semibold">Biro DATIN</span> — Kementerian PANRB
             </div>
-        </div>
+        </main>
     )
 }

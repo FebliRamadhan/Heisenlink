@@ -11,6 +11,7 @@ import bioRoutes from './bio.routes.js';
 import analyticsRoutes from './analytics.routes.js';
 import adminRoutes from './admin.routes.js';
 import publicRoutes from './public.routes.js';
+import systemRoutes from './system.routes.js';
 
 const router = Router();
 
@@ -32,6 +33,9 @@ router.use('/api/analytics', analyticsRoutes);
 
 // Admin routes
 router.use('/api/admin', adminRoutes);
+
+// System info (config flags for the dashboard)
+router.use('/api/system', systemRoutes);
 
 // ===========================================
 // Public Routes (Redirects & Bio Pages)

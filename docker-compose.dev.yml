@@ -11,11 +11,16 @@ services:
     container_name: linkhub-app-dev
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      # Express on 4000, Next on 3005 (matches package.json `dev:next -p 3005`).
+      - "3005:3005"
+      - "4000:4000"
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://linkhub:linkhub_password@db:5432/linkhub?schema=public
       - REDIS_URL=redis://redis:6379
+      # Express + Next run side-by-side via `npm run dev`, so localhost is correct here.
+      - NEXT_INTERNAL_URL=${NEXT_INTERNAL_URL:-http://localhost:3005}
+      - REVALIDATE_SECRET=${REVALIDATE_SECRET:-dev-revalidate-secret}
     env_file:
       - .env
     depends_on:
@@ -39,7 +44,9 @@ services:
     container_name: linkhub-db-dev
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      # 5433 on host to avoid clashing with a native Postgres on 5432.
+      # Internal container port stays 5432, so other compose services still use db:5432.
+      - "5433:5432"
     environment:
       - POSTGRES_USER=linkhub
       - POSTGRES_PASSWORD=linkhub_password

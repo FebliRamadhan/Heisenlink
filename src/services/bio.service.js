@@ -5,6 +5,7 @@
 import prisma from '../config/database.js';
 import config from '../config/index.js';
 import { cacheBioPage, invalidateBioPage, getCachedBioPage } from './cache.service.js';
+import { revalidateBioTag } from './revalidate.service.js';
 import { errors } from '../middleware/error.middleware.js';
 import { sanitizeUrl, isValidUrl } from '../utils/helpers.js';
 import { isReservedAlias } from '../utils/shortcode.js';
@@ -144,13 +145,52 @@ export const updateBioPage = async (userId, data) => {
 
     // Invalidate cache
     await invalidateBioPage(bioPage.slug);
+    revalidateBioTag(bioPage.slug);
     if (updateData.slug) {
         await invalidateBioPage(updateData.slug);
+        revalidateBioTag(updateData.slug);
     }
 
     logger.info(`Updated bio page for user: ${userId}`);
 
     return formatBioPageResponse(updated);
+};
+
+/**
+ * Check whether a slug is available for the requesting user.
+ * Slug is available if it's not reserved AND (not used OR used by the same user's own bio).
+ * @param {string} slug
+ * @param {string} userId - The requesting user's id
+ * @returns {Promise<{available: boolean, reason?: 'reserved' | 'taken' | 'invalid'}>}
+ */
+export const isSlugAvailable = async (slug, userId) => {
+    if (typeof slug !== 'string' || !/^[a-z0-9_-]{3,50}$/.test(slug)) {
+        return { available: false, reason: 'invalid' };
+    }
+    if (isReservedAlias(slug)) {
+        return { available: false, reason: 'reserved' };
+    }
+    const existing = await prisma.bioPage.findUnique({
+        where: { slug },
+        select: { userId: true },
+    });
+    if (existing && existing.userId !== userId) {
+        return { available: false, reason: 'taken' };
+    }
+    return { available: true };
+};
+
+/**
+ * Get current avatar URL for a user (or null)
+ * @param {string} userId
+ * @returns {Promise<string|null>}
+ */
+export const getAvatarUrl = async (userId) => {
+    const bioPage = await prisma.bioPage.findUnique({
+        where: { userId },
+        select: { avatarUrl: true },
+    });
+    return bioPage?.avatarUrl ?? null;
 };
 
 /**
@@ -179,6 +219,7 @@ export const updateAvatar = async (userId, avatarUrl) => {
     });
 
     await invalidateBioPage(bioPage.slug);
+    revalidateBioTag(bioPage.slug);
 
     return formatBioPageResponse(updated);
 };
@@ -228,6 +269,7 @@ export const addBioLink = async (userId, data) => {
     });
 
     await invalidateBioPage(bioPage.slug);
+    revalidateBioTag(bioPage.slug);
 
     return bioLink;
 };
@@ -274,6 +316,7 @@ export const updateBioLink = async (linkId, userId, data) => {
     });
 
     await invalidateBioPage(bioLink.bioPage.slug);
+    revalidateBioTag(bioLink.bioPage.slug);
 
     return updated;
 };
@@ -302,6 +345,7 @@ export const deleteBioLink = async (linkId, userId) => {
     });
 
     await invalidateBioPage(bioLink.bioPage.slug);
+    revalidateBioTag(bioLink.bioPage.slug);
 };
 
 /**
@@ -329,6 +373,22 @@ export const reorderBioLinks = async (userId, linkIds) => {
     );
 
     await invalidateBioPage(bioPage.slug);
+    revalidateBioTag(bioPage.slug);
+};
+
+/**
+ * Get bio link by id (for public click tracking) — only returns visible links
+ * on published bio pages.
+ * @param {string} linkId
+ * @returns {Promise<{id: string, url: string} | null>}
+ */
+export const getPublicBioLink = async (linkId) => {
+    const link = await prisma.bioLink.findUnique({
+        where: { id: linkId },
+        include: { bioPage: { select: { isPublished: true } } },
+    });
+    if (!link || !link.isVisible || !link.bioPage?.isPublished) return null;
+    return { id: link.id, url: link.url };
 };
 
 /**
@@ -377,9 +437,12 @@ export default {
     getBioPageBySlug,
     updateBioPage,
     updateAvatar,
+    getAvatarUrl,
     addBioLink,
     updateBioLink,
     deleteBioLink,
     reorderBioLinks,
+    getPublicBioLink,
     trackBioLinkClick,
+    isSlugAvailable,
 };

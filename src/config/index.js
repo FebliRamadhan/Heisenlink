@@ -79,6 +79,24 @@ const config = {
         dir: process.env.UPLOAD_DIR || './public/uploads',
     },
 
+    // S3 / Object Storage (AWS S3, MinIO, R2, etc.)
+    s3: {
+        enabled: process.env.S3_ENABLED === 'true',
+        endpoint: process.env.S3_ENDPOINT || undefined,
+        region: process.env.S3_REGION || 'us-east-1',
+        bucket: process.env.S3_BUCKET,
+        accessKeyId: process.env.S3_ACCESS_KEY_ID,
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+        forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
+        publicUrl: process.env.S3_PUBLIC_URL || undefined,
+    },
+
+    // Next.js ISR revalidation (Express calls Next so it can drop fetch-cache)
+    revalidate: {
+        url: process.env.NEXT_INTERNAL_URL || undefined,
+        secret: process.env.REVALIDATE_SECRET || undefined,
+    },
+
     // Logging
     logging: {
         level: process.env.LOG_LEVEL || 'info',
