@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ToastAction } from "@/components/ui/toast"
 import api from "@/lib/api"
 import { Plus, Trash2 } from "lucide-react"
-import { SOCIAL_PLATFORMS, SocialIcon, getSocialPlatform } from "@/components/bio/social-icons"
+import { SOCIAL_PLATFORMS, SocialIcon, getSocialPlatform, normalizeSocialUrl } from "@/components/bio/social-icons"
 
 interface SocialLink {
     platform: string
@@ -29,7 +29,11 @@ export function SocialLinksEditor({ socialLinks: initialLinks }: SocialLinksEdit
 
     const mutation = useMutation({
         mutationFn: async (socialLinks: SocialLink[]) => {
-            await api.patch("/bio", { socialLinks })
+            const normalized = socialLinks.map((s) => ({
+                ...s,
+                url: normalizeSocialUrl(s.url, s.platform),
+            }))
+            await api.patch("/bio", { socialLinks: normalized })
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["bio"] })

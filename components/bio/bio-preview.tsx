@@ -1,7 +1,7 @@
 "use client"
 
 import { themes as themeConstants } from "@/src/constants/themes"
-import { SocialIcon, getSocialLabel } from "@/components/bio/social-icons"
+import { SocialIcon, getSocialLabel, normalizeSocialUrl } from "@/components/bio/social-icons"
 
 interface BioPreviewProps {
     bioPage: any
@@ -51,10 +51,11 @@ export function BioPreview({ bioPage }: BioPreviewProps) {
                         <ul className="flex flex-wrap gap-3 justify-center list-none p-0 m-0" aria-label="Social profiles">
                             {bioPage.socialLinks.filter((s: any) => s.url).map((social: any) => {
                                 const label = getSocialLabel(social.platform)
+                                const href = normalizeSocialUrl(social.url, social.platform)
                                 return (
                                     <li key={social.platform}>
                                         <a
-                                            href={social.url}
+                                            href={href}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="bio-surface w-10 h-10 rounded-full flex items-center justify-center transition-transform duration-[var(--motion-base)] ease-[var(--ease-out)] hover:scale-110"

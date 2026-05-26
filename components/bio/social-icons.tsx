@@ -60,3 +60,13 @@ export function SocialIcon({
 export function getSocialLabel(platform: string): string {
     return getSocialPlatform(platform)?.label ?? platform
 }
+
+// Ensure an outbound social URL has a scheme so the browser doesn't treat it
+// as a path on the current host (e.g. "x.com/foo" → "/x.com/foo").
+export function normalizeSocialUrl(url: string | null | undefined, platform?: string): string {
+    const value = (url ?? "").trim()
+    if (!value) return ""
+    if (/^(https?:|mailto:|tel:)/i.test(value)) return value
+    if (platform === "email" && value.includes("@")) return `mailto:${value}`
+    return `https://${value.replace(/^\/+/, "")}`
+}
