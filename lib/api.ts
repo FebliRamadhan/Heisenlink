@@ -2,11 +2,12 @@ import axios from 'axios';
 import { useAuthStore } from '@/stores/auth-store';
 
 // Create API instance
+// NOTE: Do not set a global Content-Type default. Axios sets `application/json`
+// automatically for object bodies; setting it here breaks FormData uploads
+// (axios 1.x silently JSON-stringifies FormData when a JSON Content-Type is
+// already present, so multer sees an empty body).
 const api = axios.create({
     baseURL: '/api',
-    headers: {
-        'Content-Type': 'application/json',
-    },
 });
 
 // Request interceptor
