@@ -1,5 +1,3 @@
-"use client"
-
 import {
     Instagram,
     Twitter,
