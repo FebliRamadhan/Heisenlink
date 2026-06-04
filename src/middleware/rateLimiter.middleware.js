@@ -120,6 +120,22 @@ export const rateLimiters = {
         max: 200,
         keyPrefix: 'rate:redirect',
     }),
+
+    // Limit for public form submissions (anti-spam)
+    formSubmit: createRateLimiter({
+        windowMs: 60000, // 1 minute
+        max: 10,
+        keyPrefix: 'rate:form-submit',
+        message: 'Too many submissions, please try again later',
+    }),
+
+    // Limit for public form file uploads
+    formUpload: createRateLimiter({
+        windowMs: 60000, // 1 minute
+        max: 20,
+        keyPrefix: 'rate:form-upload',
+        message: 'Too many uploads, please try again later',
+    }),
 };
 
 export default createRateLimiter;

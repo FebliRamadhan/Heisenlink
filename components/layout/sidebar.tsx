@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Link as LinkIcon, UserCircle, BarChart2, Settings, Shield, Activity, ScrollText } from "lucide-react"
+import { LayoutDashboard, Link as LinkIcon, UserCircle, BarChart2, Settings, Shield, Activity, ScrollText, ClipboardList } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 
 interface SidebarProps {
@@ -30,6 +30,11 @@ export function Sidebar({ mobile, onNavigate }: SidebarProps = {}) {
             href: "/dashboard/bio",
             title: "Bio Page",
             icon: UserCircle,
+        },
+        {
+            href: "/dashboard/forms",
+            title: "Forms",
+            icon: ClipboardList,
         },
         {
             href: "/dashboard/analytics",

@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm audit:*)",
+      "Bash(rtk npm:*)",
+      "Bash(npm install:*)",
+      "Bash(npm ls:*)",
+      "Bash(rtk npx:*)",
+      "Bash(rtk git:*)",
+      "Bash(lsof:*)",
+      "Bash(xxd /Users/febliramadhan/Documents/Repo/PlayGround/linkhub/.env)",
+      "Bash(node:*)",
+      "Bash(rtk proxy:*)",
+      "Bash(npm view:*)",
+      "Bash(python3 -c \"import sys,json; vs=[v for v in json.load\\(sys.stdin\\) if v.startswith\\('14.'\\)]; print\\('\\\\n'.join\\(vs[-5:]\\)\\)\")",
+      "Bash(python3 -c \"import sys,json; vs=[v for v in json.load\\(sys.stdin\\) if v.startswith\\('14.2.'\\) and 'canary' not in v and 'rc' not in v]; print\\('\\\\n'.join\\(vs[-5:]\\)\\)\")",
+      "Bash(git commit:*)",
+      "Bash(rtk ls:*)",
+      "Bash(npx prisma:*)",
+      "Bash(chmod +x:*)",
+      "Bash(git add:*)",
+      "Bash(docker-compose up:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(rtk docker *)",
+      "Bash(rtk curl *)",
+      "Bash(rtk ps *)",
+      "Bash(rtk cat *)",
+      "Bash(rtk ssh *)",
+      "Bash(rtk tail *)",
+      "Bash(ssh *)"
+    ]
+  }
+}

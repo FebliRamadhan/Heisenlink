@@ -35,6 +35,7 @@ model User {
   shortLinks    ShortLink[]
   bioPage       BioPage?
   auditLogs     AuditLog[]
+  forms         Form[]
 
   @@unique([ssoProvider, ssoProviderId])
   @@map("users")
@@ -150,6 +151,115 @@ model ClickEvent {
 enum LinkType {
   SHORTLINK
   BIOLINK
+}
+
+// ===========================================
+// Form Models (Google Forms-like feature)
+// ===========================================
+enum FormQuestionType {
+  SHORT_TEXT
+  LONG_TEXT
+  MULTIPLE_CHOICE
+  CHECKBOXES
+  DROPDOWN
+  LINEAR_SCALE
+  DATE
+  TIME
+  FILE_UPLOAD
+  SECTION   // display-only: page-break + judul bagian
+  STATEMENT // display-only: narasi/teks
+  IMAGE     // display-only: gambar (URL di config.imageUrl)
+}
+
+model Form {
+  id                    String    @id @default(uuid())
+  userId                String    @map("user_id")
+  slug                  String    @unique
+  title                 String    @default("Untitled form")
+  description           String?
+  theme                 String    @default("default")
+  settings              Json?
+  isPublished           Boolean   @default(false) @map("is_published")
+  acceptingResponses    Boolean   @default(true) @map("accepting_responses")
+  collectEmail          Boolean   @default(false) @map("collect_email")
+  oneResponsePerSession Boolean   @default(true) @map("one_response_per_session")
+  closesAt              DateTime? @map("closes_at")
+  confirmationMessage   String?   @map("confirmation_message")
+  closedMessage         String?   @map("closed_message")
+  responseCount         Int       @default(0) @map("response_count")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions     FormQuestion[]
+  responses     FormResponse[]
+
+  @@index([userId])
+  @@index([slug])
+  @@map("forms")
+}
+
+model FormQuestion {
+  id            String           @id @default(uuid())
+  formId        String           @map("form_id")
+  type          FormQuestionType
+  title         String           @default("")
+  description   String?
+  position      Int              @default(0)
+  isRequired    Boolean          @default(false) @map("is_required")
+  options       Json?
+  config        Json?
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  form          Form            @relation(fields: [formId], references: [id], onDelete: Cascade)
+  answers       FormAnswer[]
+
+  @@index([formId])
+  @@map("form_questions")
+}
+
+model FormResponse {
+  id              String   @id @default(uuid())
+  formId          String   @map("form_id")
+  idempotencyKey  String   @map("idempotency_key")
+  respondentEmail String?  @map("respondent_email")
+  ipAddress       String?  @map("ip_address")
+  userAgent       String?  @map("user_agent")
+  submittedAt     DateTime @default(now()) @map("submitted_at")
+
+  // Relations
+  form          Form            @relation(fields: [formId], references: [id], onDelete: Cascade)
+  answers       FormAnswer[]
+
+  @@unique([formId, idempotencyKey])
+  @@index([formId])
+  @@index([submittedAt])
+  @@map("form_responses")
+}
+
+model FormAnswer {
+  id            String    @id @default(uuid())
+  responseId    String    @map("response_id")
+  questionId    String    @map("question_id")
+  textValue     String?   @map("text_value") @db.Text
+  numberValue   Float?    @map("number_value")
+  dateValue     DateTime? @map("date_value")
+  optionId      String?   @map("option_id")
+  fileUrl       String?   @map("file_url")
+  fileName      String?   @map("file_name")
+  fileSize      Int?      @map("file_size")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  response      FormResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question      FormQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([responseId])
+  @@index([questionId])
+  @@map("form_answers")
 }
 
 // ===========================================

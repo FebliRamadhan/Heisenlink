@@ -168,6 +168,36 @@ export const invalidateBioPage = async (slug) => {
     await del(`bio:${slug}`);
 };
 
+// ===========================================
+// Form Cache Helpers
+// ===========================================
+
+/**
+ * Cache published form structure
+ * @param {string} slug - Form slug
+ * @param {object} form - Public form data
+ */
+export const cacheForm = async (slug, form) => {
+    await set(`form:${slug}`, form, config.cache.formTTL);
+};
+
+/**
+ * Get cached form
+ * @param {string} slug - Form slug
+ * @returns {Promise<object|null>}
+ */
+export const getCachedForm = async (slug) => {
+    return await get(`form:${slug}`);
+};
+
+/**
+ * Invalidate form cache
+ * @param {string} slug - Form slug
+ */
+export const invalidateForm = async (slug) => {
+    await del(`form:${slug}`);
+};
+
 export default {
     get,
     set,
@@ -181,4 +211,7 @@ export default {
     cacheBioPage,
     getCachedBioPage,
     invalidateBioPage,
+    cacheForm,
+    getCachedForm,
+    invalidateForm,
 };

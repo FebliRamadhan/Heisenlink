@@ -8,6 +8,7 @@ import { Router } from 'express';
 import authRoutes from './auth.routes.js';
 import linksRoutes from './links.routes.js';
 import bioRoutes from './bio.routes.js';
+import formsRoutes from './forms.routes.js';
 import analyticsRoutes from './analytics.routes.js';
 import adminRoutes from './admin.routes.js';
 import publicRoutes from './public.routes.js';
@@ -27,6 +28,9 @@ router.use('/api/links', linksRoutes);
 
 // Bio page routes
 router.use('/api/bio', bioRoutes);
+
+// Form routes
+router.use('/api/forms', formsRoutes);
 
 // Analytics routes
 router.use('/api/analytics', analyticsRoutes);

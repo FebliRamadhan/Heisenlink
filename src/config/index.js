@@ -107,6 +107,7 @@ const config = {
     cache: {
         shortlinkTTL: 3600, // 1 hour
         bioPageTTL: 300, // 5 minutes
+        formTTL: 300, // 5 minutes
         userTTL: 900, // 15 minutes
         analyticsTTL: 3600, // 1 hour
     },
