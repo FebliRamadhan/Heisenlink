@@ -37,22 +37,18 @@ export default async function PublicFormPage({ params }: { params: { slug: strin
         !form.acceptingResponses || (form.closesAt ? new Date(form.closesAt).getTime() < Date.now() : false)
 
     return (
-        <main className="min-h-screen bg-primary/5 px-4 py-8">
-            <div className="mx-auto max-w-2xl">
-                {isClosed ? (
-                    <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
-                        <div className="h-2.5 bg-primary" aria-hidden="true" />
-                        <div className="p-8 text-center">
-                            <h1 className="mb-2 text-2xl font-semibold">{form.title}</h1>
-                            <p className="text-muted-foreground">
-                                {form.closedMessage || "This form is no longer accepting responses."}
-                            </p>
-                        </div>
+        <main style={{ maxWidth: 1120, margin: "0 auto", padding: "34px 28px 80px" }}>
+            {isClosed ? (
+                <div className="f-card" style={{ maxWidth: 640, margin: "40px auto" }}>
+                    <div className="f-track"><div className="f-fill" style={{ width: "100%" }} /></div>
+                    <div className="f-done" style={{ padding: "48px 40px" }}>
+                        <h2>{form.title}</h2>
+                        <p>{form.closedMessage || "Formulir ini sudah tidak menerima tanggapan."}</p>
                     </div>
-                ) : (
-                    <FormRenderer form={form} />
-                )}
-            </div>
+                </div>
+            ) : (
+                <FormRenderer form={form} />
+            )}
         </main>
     )
 }

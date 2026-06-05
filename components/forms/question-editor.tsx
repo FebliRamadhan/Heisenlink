@@ -116,15 +116,15 @@ export function QuestionEditor({
                 </Select>
             </div>
 
-            {/* Optional description for input questions */}
-            {!display && (
+            {/* Optional description: help text for inputs, intro text for a Section break */}
+            {(!display || local.type === "SECTION") && (
                 <Input
                     value={local.description || ""}
                     onChange={(e) => setLocal({ ...local, description: e.target.value })}
                     onBlur={() => (local.description || "") !== (question.description || "") && patch({ description: local.description || null })}
-                    placeholder="Help text (optional)"
+                    placeholder={local.type === "SECTION" ? "Intro / deskripsi bagian (opsional)" : "Help text (optional)"}
                     className="text-sm"
-                    aria-label="Help text"
+                    aria-label={local.type === "SECTION" ? "Section intro" : "Help text"}
                 />
             )}
 
