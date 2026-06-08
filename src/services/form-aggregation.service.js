@@ -8,23 +8,16 @@
 import prisma from '../config/database.js';
 import { assertFormOwner, formatQuestion } from './forms.service.js';
 import { escapeCsvField } from '../utils/helpers.js';
+import {
+    answerToText,
+    choiceDistribution,
+    scaleDistribution,
+    fileCount,
+    textSamples,
+} from './question-aggregation.js';
 
 const DISPLAY_ONLY = new Set(['SECTION', 'STATEMENT', 'IMAGE']);
 const CHOICE_TYPES = new Set(['MULTIPLE_CHOICE', 'CHECKBOXES', 'DROPDOWN']);
-
-/**
- * Render a single answer row into a display string.
- */
-const answerToText = (answer) => {
-    if (answer.fileUrl) return answer.fileName || answer.fileUrl;
-    if (answer.numberValue !== null && answer.numberValue !== undefined) {
-        return String(answer.numberValue);
-    }
-    if (answer.dateValue) return new Date(answer.dateValue).toISOString().slice(0, 10);
-    if (answer.textValue !== null && answer.textValue !== undefined) return answer.textValue;
-    if (answer.optionId) return answer.optionId;
-    return '';
-};
 
 /**
  * Paginated individual responses for a form (owner-only).
@@ -76,64 +69,20 @@ export const getSummary = async (formId, userId, role) => {
         const base = { question: formatQuestion(question) };
 
         if (CHOICE_TYPES.has(question.type)) {
-            // Count by optionId (checkbox answers already 1 row per selection).
-            const grouped = await prisma.formAnswer.groupBy({
-                by: ['optionId'],
-                where: { questionId: question.id, optionId: { not: null } },
-                _count: { _all: true },
-            });
-            const labels = new Map(
-                (Array.isArray(question.options) ? question.options : []).map((o) => [o.id, o.label])
+            const { totalAnswered, distribution } = await choiceDistribution(
+                question.id,
+                question.options
             );
-            summaries.push({
-                ...base,
-                kind: 'choice',
-                totalAnswered: grouped.reduce((s, g) => s + g._count._all, 0),
-                distribution: grouped.map((g) => ({
-                    optionId: g.optionId,
-                    label: labels.get(g.optionId) || g.optionId,
-                    count: g._count._all,
-                })),
-            });
+            summaries.push({ ...base, kind: 'choice', totalAnswered, distribution });
         } else if (question.type === 'LINEAR_SCALE') {
-            const grouped = await prisma.formAnswer.groupBy({
-                by: ['numberValue'],
-                where: { questionId: question.id, numberValue: { not: null } },
-                _count: { _all: true },
-            });
-            const agg = await prisma.formAnswer.aggregate({
-                where: { questionId: question.id, numberValue: { not: null } },
-                _avg: { numberValue: true },
-                _count: { _all: true },
-            });
-            summaries.push({
-                ...base,
-                kind: 'scale',
-                totalAnswered: agg._count._all,
-                average: agg._avg.numberValue,
-                distribution: grouped
-                    .map((g) => ({ value: g.numberValue, count: g._count._all }))
-                    .sort((a, b) => a.value - b.value),
-            });
+            const { totalAnswered, average, distribution } = await scaleDistribution(question.id);
+            summaries.push({ ...base, kind: 'scale', totalAnswered, average, distribution });
         } else if (question.type === 'FILE_UPLOAD') {
-            const count = await prisma.formAnswer.count({
-                where: { questionId: question.id, fileUrl: { not: null } },
-            });
-            summaries.push({ ...base, kind: 'file', totalAnswered: count });
+            summaries.push({ ...base, kind: 'file', totalAnswered: await fileCount(question.id) });
         } else {
             // text / date / time: count + recent samples
-            const answers = await prisma.formAnswer.findMany({
-                where: { questionId: question.id },
-                orderBy: { createdAt: 'desc' },
-                take: 5,
-            });
-            const total = await prisma.formAnswer.count({ where: { questionId: question.id } });
-            summaries.push({
-                ...base,
-                kind: 'text',
-                totalAnswered: total,
-                samples: answers.map(answerToText).filter(Boolean),
-            });
+            const { totalAnswered, samples } = await textSamples(question.id, 5);
+            summaries.push({ ...base, kind: 'text', totalAnswered, samples });
         }
     }
 

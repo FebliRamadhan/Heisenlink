@@ -198,6 +198,36 @@ export const invalidateForm = async (slug) => {
     await del(`form:${slug}`);
 };
 
+// ===========================================
+// Form Dashboard Cache Helpers
+// ===========================================
+
+/**
+ * Cache a published dashboard's redacted public payload (meta + widgets + data).
+ * @param {string} slug - Dashboard slug
+ * @param {object} dashboard - Public dashboard data
+ */
+export const cacheDashboard = async (slug, dashboard) => {
+    await set(`dashboard:${slug}`, dashboard, config.cache.dashboardTTL);
+};
+
+/**
+ * Get cached dashboard public payload.
+ * @param {string} slug - Dashboard slug
+ * @returns {Promise<object|null>}
+ */
+export const getCachedDashboard = async (slug) => {
+    return await get(`dashboard:${slug}`);
+};
+
+/**
+ * Invalidate dashboard cache.
+ * @param {string} slug - Dashboard slug
+ */
+export const invalidateDashboard = async (slug) => {
+    await del(`dashboard:${slug}`);
+};
+
 export default {
     get,
     set,
@@ -214,4 +244,7 @@ export default {
     cacheForm,
     getCachedForm,
     invalidateForm,
+    cacheDashboard,
+    getCachedDashboard,
+    invalidateDashboard,
 };

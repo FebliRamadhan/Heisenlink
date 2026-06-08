@@ -9,6 +9,7 @@
 import prisma from '../config/database.js';
 import { errors } from '../middleware/error.middleware.js';
 import { validateAndNormalize } from './answer-normalizer.js';
+import { invalidateDashboardsForForm } from './form-dashboard.service.js';
 import logger from '../utils/logger.js';
 
 /**
@@ -72,6 +73,10 @@ export const submitResponse = async (slug, payload, meta = {}) => {
             });
             return created;
         });
+        // Refresh aggregated public dashboards for this form (fire-and-forget).
+        invalidateDashboardsForForm(form.id).catch((e) =>
+            logger.warn(`Dashboard invalidation failed for form ${form.id}: ${e.message}`)
+        );
         return { id: response.id, duplicate: false };
     } catch (error) {
         // Race: another request inserted the same idempotencyKey first.

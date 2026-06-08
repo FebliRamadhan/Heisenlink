@@ -9,6 +9,7 @@ import authRoutes from './auth.routes.js';
 import linksRoutes from './links.routes.js';
 import bioRoutes from './bio.routes.js';
 import formsRoutes from './forms.routes.js';
+import dashboardsRoutes from './dashboards.routes.js';
 import analyticsRoutes from './analytics.routes.js';
 import adminRoutes from './admin.routes.js';
 import publicRoutes from './public.routes.js';
@@ -31,6 +32,9 @@ router.use('/api/bio', bioRoutes);
 
 // Form routes
 router.use('/api/forms', formsRoutes);
+
+// Form dashboard routes (dynamic shareable dashboards over responses)
+router.use('/api/dashboards', dashboardsRoutes);
 
 // Analytics routes
 router.use('/api/analytics', analyticsRoutes);

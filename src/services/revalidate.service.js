@@ -51,4 +51,9 @@ export const revalidateFormTag = (slug) => {
     return revalidate({ tag: `form:${slug}` });
 };
 
-export default { revalidate, revalidateBioTag, revalidateFormTag };
+export const revalidateDashboardTag = (slug) => {
+    if (!slug) return;
+    return revalidate({ tag: `dashboard:${slug}` });
+};
+
+export default { revalidate, revalidateBioTag, revalidateFormTag, revalidateDashboardTag };

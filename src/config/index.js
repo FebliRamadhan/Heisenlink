@@ -108,6 +108,7 @@ const config = {
         shortlinkTTL: 3600, // 1 hour
         bioPageTTL: 300, // 5 minutes
         formTTL: 300, // 5 minutes
+        dashboardTTL: 60, // 1 minute (aggregated data, refreshed on new submissions)
         userTTL: 900, // 15 minutes
         analyticsTTL: 3600, // 1 hour
     },
