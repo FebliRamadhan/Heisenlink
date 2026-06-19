@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Cache Service
+// Heisenlink - Cache Service
 // ===========================================
 
 import { getRedisClient } from '../config/redis.js';
@@ -168,6 +168,66 @@ export const invalidateBioPage = async (slug) => {
     await del(`bio:${slug}`);
 };
 
+// ===========================================
+// Form Cache Helpers
+// ===========================================
+
+/**
+ * Cache published form structure
+ * @param {string} slug - Form slug
+ * @param {object} form - Public form data
+ */
+export const cacheForm = async (slug, form) => {
+    await set(`form:${slug}`, form, config.cache.formTTL);
+};
+
+/**
+ * Get cached form
+ * @param {string} slug - Form slug
+ * @returns {Promise<object|null>}
+ */
+export const getCachedForm = async (slug) => {
+    return await get(`form:${slug}`);
+};
+
+/**
+ * Invalidate form cache
+ * @param {string} slug - Form slug
+ */
+export const invalidateForm = async (slug) => {
+    await del(`form:${slug}`);
+};
+
+// ===========================================
+// Form Dashboard Cache Helpers
+// ===========================================
+
+/**
+ * Cache a published dashboard's redacted public payload (meta + widgets + data).
+ * @param {string} slug - Dashboard slug
+ * @param {object} dashboard - Public dashboard data
+ */
+export const cacheDashboard = async (slug, dashboard) => {
+    await set(`dashboard:${slug}`, dashboard, config.cache.dashboardTTL);
+};
+
+/**
+ * Get cached dashboard public payload.
+ * @param {string} slug - Dashboard slug
+ * @returns {Promise<object|null>}
+ */
+export const getCachedDashboard = async (slug) => {
+    return await get(`dashboard:${slug}`);
+};
+
+/**
+ * Invalidate dashboard cache.
+ * @param {string} slug - Dashboard slug
+ */
+export const invalidateDashboard = async (slug) => {
+    await del(`dashboard:${slug}`);
+};
+
 export default {
     get,
     set,
@@ -181,4 +241,10 @@ export default {
     cacheBioPage,
     getCachedBioPage,
     invalidateBioPage,
+    cacheForm,
+    getCachedForm,
+    invalidateForm,
+    cacheDashboard,
+    getCachedDashboard,
+    invalidateDashboard,
 };

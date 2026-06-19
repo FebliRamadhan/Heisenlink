@@ -18,11 +18,9 @@ export default function Home() {
             <header className="px-6 h-20 flex items-center fixed w-full z-50 transition-all duration-300 glass border-b-0">
                 <div className="container mx-auto flex items-center justify-between">
                     <Link className="flex items-center justify-center gap-2 font-bold text-2xl tracking-tight" href="#">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-cyan-600 flex items-center justify-center text-white shadow-lg shadow-primary/25">
-                            <LinkIcon className="h-6 w-6" />
-                        </div>
+                        <img src="/logo-panrb.png" alt="Logo Kementerian PANRB" className="h-12 w-auto" />
                         <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300">
-                            LinkHub
+                            Heisenlink
                         </span>
                     </Link>
                     <nav className="ml-auto hidden md:flex gap-8">
@@ -146,10 +144,8 @@ export default function Home() {
             <footer className="py-12 w-full border-t bg-card/50 backdrop-blur-sm z-50 relative">
                 <div className="container px-4 md:px-6 mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
-                            <LinkIcon className="h-5 w-5" />
-                        </div>
-                        <span className="font-bold text-lg">LinkHub</span>
+                        <img src="/logo-panrb.png" alt="Logo Kementerian PANRB" className="h-10 w-auto" />
+                        <span className="font-bold text-lg">Heisenlink</span>
                     </div>
                     <p className="text-sm text-muted-foreground">© 2026 Biro Data dan Teknologi Informasi - KemenPANRB.</p>
                 </div>

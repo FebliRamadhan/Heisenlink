@@ -22,9 +22,25 @@ import api from "@/lib/api"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
 
+// Reserved aliases that conflict with app routes — must match backend shortcode.js
+const RESERVED_ALIASES = new Set([
+    'api', 'admin', 'login', 'logout', 'register', 'settings', 'dashboard',
+    'analytics', 'bio', 'health', 'forbidden', 'link-expired', 'link-inactive',
+    'not-found', 'too-many-requests', 'error', 'loading', 'static', 'public',
+    'assets', 'images', 'css', 'js', 'favicon', '_next', '_error', '_app',
+    'auth', 'signup', 'reset-password', 'verify', 'callback', 'redirect',
+    'sitemap', 'robots', 'manifest',
+])
+
 const formSchema = z.object({
     url: z.string().url("Please enter a valid URL"),
-    alias: z.string().min(3, "Alias must be at least 3 characters").optional().or(z.literal("")),
+    alias: z.string()
+        .min(3, "Alias must be at least 3 characters")
+        .refine(val => !RESERVED_ALIASES.has(val.toLowerCase()), {
+            message: "This alias is reserved and cannot be used",
+        })
+        .optional()
+        .or(z.literal("")),
     title: z.string().optional(),
     password: z.string().optional(),
     startsAt: z.string().optional(),
@@ -110,7 +126,37 @@ export function LinkForm({ initialData }: LinkFormProps) {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+                autoComplete="off"
+                spellCheck={false}
+                noValidate
+            >
+                {/* Honeypots: defeat browser/password-manager heuristics that
+                    autofill the first password-looking field they see. */}
+                <input
+                    type="text"
+                    name="username"
+                    tabIndex={-1}
+                    autoComplete="username"
+                    aria-hidden="true"
+                    className="hidden"
+                    readOnly
+                    value=""
+                    onChange={() => {}}
+                />
+                <input
+                    type="password"
+                    name="password"
+                    tabIndex={-1}
+                    autoComplete="current-password"
+                    aria-hidden="true"
+                    className="hidden"
+                    readOnly
+                    value=""
+                    onChange={() => {}}
+                />
                 <FormField
                     control={form.control}
                     name="url"
@@ -118,7 +164,14 @@ export function LinkForm({ initialData }: LinkFormProps) {
                         <FormItem>
                             <FormLabel>Destination URL</FormLabel>
                             <FormControl>
-                                <Input placeholder="https://example.com/long-url" {...field} />
+                                <Input
+                                    placeholder="https://example.com/long-url"
+                                    {...field}
+                                    autoComplete="off"
+                                    autoCorrect="off"
+                                    autoCapitalize="off"
+                                    spellCheck={false}
+                                />
                             </FormControl>
                             <FormDescription>
                                 The long URL you want to shorten.
@@ -135,7 +188,14 @@ export function LinkForm({ initialData }: LinkFormProps) {
                             <FormItem>
                                 <FormLabel>Custom Alias (Optional)</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="my-custom-link" {...field} />
+                                    <Input
+                                        placeholder="my-custom-link"
+                                        {...field}
+                                        autoComplete="off"
+                                        autoCorrect="off"
+                                        autoCapitalize="off"
+                                        spellCheck={false}
+                                    />
                                 </FormControl>
                                 <FormDescription>
                                     Leave empty for auto-generated code.
@@ -151,7 +211,18 @@ export function LinkForm({ initialData }: LinkFormProps) {
                             <FormItem>
                                 <FormLabel>Title (Optional)</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Marketing Campaign 2024" {...field} />
+                                    <Input
+                                        placeholder="Marketing Campaign 2024"
+                                        {...field}
+                                        autoComplete="off"
+                                        autoCorrect="off"
+                                        autoCapitalize="off"
+                                        spellCheck={false}
+                                        data-form-type="other"
+                                        data-1p-ignore
+                                        data-lpignore="true"
+                                        data-bwignore="true"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -165,9 +236,26 @@ export function LinkForm({ initialData }: LinkFormProps) {
                     name="password"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Password Protection (Optional)</FormLabel>
+                            <FormLabel htmlFor="link-protect-passcode">
+                                Password Protection (Optional)
+                            </FormLabel>
                             <FormControl>
-                                <Input type="password" placeholder="••••••" {...field} />
+                                <Input
+                                    {...field}
+                                    id="link-protect-passcode"
+                                    name="link-protect-passcode"
+                                    type="password"
+                                    placeholder="••••••"
+                                    autoComplete="one-time-code"
+                                    autoCorrect="off"
+                                    autoCapitalize="off"
+                                    spellCheck={false}
+                                    inputMode="text"
+                                    data-form-type="other"
+                                    data-1p-ignore
+                                    data-lpignore="true"
+                                    data-bwignore="true"
+                                />
                             </FormControl>
                             <FormDescription>
                                 Visitors must enter this password to access the link

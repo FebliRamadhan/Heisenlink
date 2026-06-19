@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Configuration Loader
+// Heisenlink - Configuration Loader
 // ===========================================
 
 import dotenv from 'dotenv';
@@ -10,11 +10,11 @@ dotenv.config();
 const config = {
     // Application
     app: {
-        name: process.env.APP_NAME || 'LinkHub',
+        name: process.env.APP_NAME || 'Heisenlink',
         env: process.env.NODE_ENV || 'development',
         port: parseInt(process.env.PORT, 10) || 3000,
         url: process.env.APP_URL || 'http://localhost:3000',
-        secret: process.env.APP_SECRET || 'change-this-secret',
+        secret: process.env.APP_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'dev-only-secret'),
     },
 
     // Domain Configuration
@@ -36,9 +36,22 @@ const config = {
 
     // JWT
     jwt: {
-        secret: process.env.JWT_SECRET || 'jwt-secret-change-this',
+        secret: process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'dev-only-jwt-secret'),
         expiresIn: process.env.JWT_EXPIRES_IN || '24h',
         refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    },
+
+    // SSO (SADA SSO - OAuth2 PKCE)
+    sso: {
+        enabled: process.env.SSO_ENABLED === 'true',
+        clientId: process.env.SSO_CLIENT_ID,
+        clientSecret: process.env.SSO_CLIENT_SECRET,
+        authorizeUrl: process.env.SSO_AUTHORIZE_URL || 'http://localhost:3002/authorize',
+        tokenUrl: process.env.SSO_TOKEN_URL || 'http://localhost:3001/oauth/token',
+        userInfoUrl: process.env.SSO_USERINFO_URL || 'http://localhost:3001/oauth/userinfo',
+        logoutUrl: process.env.SSO_LOGOUT_URL || 'http://localhost:3001/oauth/logout',
+        redirectUri: process.env.SSO_REDIRECT_URI || 'http://localhost:3000/callback',
+        scopes: process.env.SSO_SCOPES || 'openid profile email offline_access',
     },
 
     // LDAP
@@ -66,6 +79,24 @@ const config = {
         dir: process.env.UPLOAD_DIR || './public/uploads',
     },
 
+    // S3 / Object Storage (AWS S3, MinIO, R2, etc.)
+    s3: {
+        enabled: process.env.S3_ENABLED === 'true',
+        endpoint: process.env.S3_ENDPOINT || undefined,
+        region: process.env.S3_REGION || 'us-east-1',
+        bucket: process.env.S3_BUCKET,
+        accessKeyId: process.env.S3_ACCESS_KEY_ID,
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+        forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
+        publicUrl: process.env.S3_PUBLIC_URL || undefined,
+    },
+
+    // Next.js ISR revalidation (Express calls Next so it can drop fetch-cache)
+    revalidate: {
+        url: process.env.NEXT_INTERNAL_URL || undefined,
+        secret: process.env.REVALIDATE_SECRET || undefined,
+    },
+
     // Logging
     logging: {
         level: process.env.LOG_LEVEL || 'info',
@@ -76,6 +107,8 @@ const config = {
     cache: {
         shortlinkTTL: 3600, // 1 hour
         bioPageTTL: 300, // 5 minutes
+        formTTL: 300, // 5 minutes
+        dashboardTTL: 60, // 1 minute (aggregated data, refreshed on new submissions)
         userTTL: 900, // 15 minutes
         analyticsTTL: 3600, // 1 hour
     },
@@ -83,7 +116,7 @@ const config = {
 
 // Validate required configuration
 const validateConfig = () => {
-    const required = ['database.url'];
+    const required = ['database.url', 'app.secret', 'jwt.secret'];
     const missing = [];
 
     for (const key of required) {

@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Bio Page Themes
+// Heisenlink - Bio Page Themes
 // ===========================================
 
 export const themes = {

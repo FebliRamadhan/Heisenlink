@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Admin Middleware
+// Heisenlink - Admin Middleware
 // ===========================================
 
 import { errors } from './error.middleware.js';

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Link as LinkIcon, UserCircle, BarChart2, Settings, Shield } from "lucide-react"
+import { LayoutDashboard, Link as LinkIcon, UserCircle, BarChart2, Settings, Shield, Activity, ScrollText, ClipboardList } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 
 interface SidebarProps {
@@ -32,9 +32,20 @@ export function Sidebar({ mobile, onNavigate }: SidebarProps = {}) {
             icon: UserCircle,
         },
         {
+            href: "/dashboard/forms",
+            title: "Forms",
+            icon: ClipboardList,
+        },
+        {
             href: "/dashboard/analytics",
             title: "Analytics",
             icon: BarChart2,
+        },
+        {
+            href: "/admin",
+            title: "Admin Console",
+            icon: Activity,
+            adminOnly: true,
         },
         {
             href: "/dashboard/admin/links",
@@ -50,14 +61,14 @@ export function Sidebar({ mobile, onNavigate }: SidebarProps = {}) {
         },
         {
             href: "/dashboard/admin/users",
-            title: "Users",
+            title: "Manage Users",
             icon: Shield,
             adminOnly: true,
         },
         {
             href: "/dashboard/admin/logs",
-            title: "Login Logs",
-            icon: Shield,
+            title: "Audit Logs",
+            icon: ScrollText,
             adminOnly: true,
         },
         {

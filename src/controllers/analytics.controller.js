@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Analytics Controller
+// Heisenlink - Analytics Controller
 // ===========================================
 
 import * as analyticsService from '../services/analytics.service.js';

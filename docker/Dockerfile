@@ -28,17 +28,16 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 linkhub
+RUN addgroup --system --gid 1001 nodejs && \
+  adduser --system --uid 1001 linkhub
 
-# Copy built files
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/prisma ./prisma
-COPY . .
+# Copy built files with correct ownership (avoids slow chown -R)
+COPY --chown=linkhub:nodejs --from=deps /app/node_modules ./node_modules
+COPY --chown=linkhub:nodejs --from=deps /app/prisma ./prisma
+COPY --chown=linkhub:nodejs . .
 
-# Create directories and set permissions
-RUN mkdir -p public/uploads logs
-RUN chown -R linkhub:nodejs /app
+# Create directories with correct ownership
+RUN mkdir -p public/uploads logs && chown -R linkhub:nodejs public/uploads logs
 
 USER linkhub
 
@@ -50,4 +49,4 @@ ENV PORT=3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/health || exit 1
 
-CMD ["node", "src/server.js"]
+CMD ["sh", "docker/docker-entrypoint.sh"]

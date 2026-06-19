@@ -1,11 +1,9 @@
 // ===========================================
-// LinkHub - Bio Routes
+// Heisenlink - Bio Routes
 // ===========================================
 
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
-import { nanoid } from 'nanoid';
 import * as bioController from '../controllers/bio.controller.js';
 import { validateBody, validateParams, validateQuery } from '../middleware/validate.middleware.js';
 import { authenticate } from '../middleware/auth.middleware.js';
@@ -22,21 +20,10 @@ import { qrCodeQuerySchema } from '../validators/links.validator.js';
 const router = Router();
 
 // ===========================================
-// Multer Configuration for Avatar Upload
+// Multer Configuration for Avatar Upload (memory -> S3)
 // ===========================================
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, config.upload.dir);
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        const filename = `avatar-${req.user.sub}-${nanoid(8)}${ext}`;
-        cb(null, filename);
-    },
-});
-
 const upload = multer({
-    storage,
+    storage: multer.memoryStorage(),
     limits: {
         fileSize: config.upload.maxFileSize,
     },
@@ -50,7 +37,32 @@ const upload = multer({
     },
 });
 
-// All routes require authentication
+// ===========================================
+// Public Routes (no auth required)
+// ===========================================
+
+/**
+ * @route   GET /api/bio/click/:linkId
+ * @desc    Track click and redirect to destination
+ * @access  Public
+ */
+router.get('/click/:linkId', bioController.clickAndRedirect);
+
+/**
+ * @route   GET /api/bio/:slug
+ * @desc    Get public bio page by slug
+ * @access  Public
+ */
+router.get('/:slug', (req, res, next) => {
+    // Skip reserved sub-paths so they fall through to authenticated routes
+    const reserved = ['qr', 'avatar', 'links', 'slug-check', 'click'];
+    if (reserved.includes(req.params.slug)) {
+        return next('route');
+    }
+    return bioController.getPublicBioPage(req, res, next);
+});
+
+// All routes below require authentication
 router.use(authenticate);
 
 // ===========================================
@@ -63,6 +75,13 @@ router.use(authenticate);
  * @access  Private
  */
 router.get('/', bioController.getBioPage);
+
+/**
+ * @route   GET /api/bio/slug-check?slug=foo
+ * @desc    Check slug availability for the current user
+ * @access  Private
+ */
+router.get('/slug-check', bioController.checkSlug);
 
 /**
  * @route   PATCH /api/bio
@@ -85,6 +104,13 @@ router.post(
     upload.single('avatar'),
     bioController.uploadAvatar
 );
+
+/**
+ * @route   DELETE /api/bio/avatar
+ * @desc    Remove avatar
+ * @access  Private
+ */
+router.delete('/avatar', bioController.removeAvatar);
 
 /**
  * @route   GET /api/bio/qr

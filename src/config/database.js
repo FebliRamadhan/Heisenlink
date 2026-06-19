@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Prisma Database Client
+// Heisenlink - Prisma Database Client
 // ===========================================
 
 import { PrismaClient } from '@prisma/client';

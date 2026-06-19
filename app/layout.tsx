@@ -11,8 +11,32 @@ const fontSans = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-    title: 'LinkHub - Enterprise Shortlink & Bio Platform',
-    description: 'Internal platform for shortlinks and bio pages',
+    title: 'Heisenlink - Kementerian PANRB',
+    description: 'Platform shortlink dan bio page resmi Kementerian Pendayagunaan Aparatur Negara dan Reformasi Birokrasi',
+    icons: {
+        icon: '/icon.png',
+        apple: '/apple-icon.png',
+    },
+    openGraph: {
+        type: 'website',
+        title: 'Heisenlink - Kementerian PANRB',
+        description: 'Platform shortlink dan bio page resmi Kementerian Pendayagunaan Aparatur Negara dan Reformasi Birokrasi',
+        siteName: 'Heisenlink',
+        images: [
+            {
+                url: '/og-image.png',
+                width: 1200,
+                height: 630,
+                alt: 'Logo Kementerian PANRB',
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Heisenlink - Kementerian PANRB',
+        description: 'Platform shortlink dan bio page resmi Kementerian PANRB',
+        images: ['/og-image.png'],
+    },
 }
 
 export default function RootLayout({

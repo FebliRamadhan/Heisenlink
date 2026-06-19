@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Server Entry Point
+// Heisenlink - Server Entry Point
 // ===========================================
 
 import app from './app.js';

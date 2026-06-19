@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Auth Middleware
+// Heisenlink - Auth Middleware
 // ===========================================
 
 import { verifyToken } from '../services/auth.service.js';

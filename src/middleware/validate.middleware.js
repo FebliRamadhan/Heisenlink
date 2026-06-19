@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Validation Middleware
+// Heisenlink - Validation Middleware
 // ===========================================
 
 import { errors } from './error.middleware.js';

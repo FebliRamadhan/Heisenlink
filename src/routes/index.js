@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Routes Index
+// Heisenlink - Routes Index
 // ===========================================
 
 import { Router } from 'express';
@@ -8,9 +8,12 @@ import { Router } from 'express';
 import authRoutes from './auth.routes.js';
 import linksRoutes from './links.routes.js';
 import bioRoutes from './bio.routes.js';
+import formsRoutes from './forms.routes.js';
+import dashboardsRoutes from './dashboards.routes.js';
 import analyticsRoutes from './analytics.routes.js';
 import adminRoutes from './admin.routes.js';
 import publicRoutes from './public.routes.js';
+import systemRoutes from './system.routes.js';
 
 const router = Router();
 
@@ -27,11 +30,20 @@ router.use('/api/links', linksRoutes);
 // Bio page routes
 router.use('/api/bio', bioRoutes);
 
+// Form routes
+router.use('/api/forms', formsRoutes);
+
+// Form dashboard routes (dynamic shareable dashboards over responses)
+router.use('/api/dashboards', dashboardsRoutes);
+
 // Analytics routes
 router.use('/api/analytics', analyticsRoutes);
 
 // Admin routes
 router.use('/api/admin', adminRoutes);
+
+// System info (config flags for the dashboard)
+router.use('/api/system', systemRoutes);
 
 // ===========================================
 // Public Routes (Redirects & Bio Pages)

@@ -1,10 +1,24 @@
 // ===========================================
-// LinkHub - LDAP Service
+// Heisenlink - LDAP Service
 // ===========================================
 
 import ldap from 'ldapjs';
 import config from '../config/index.js';
 import logger from '../utils/logger.js';
+
+/**
+ * Escape special characters in LDAP filter values to prevent injection
+ * @param {string} value - Raw user input
+ * @returns {string} - Escaped value safe for LDAP filters
+ */
+const escapeLdapFilter = (value) => {
+    return String(value)
+        .replace(/\\/g, '\\5c')
+        .replace(/\*/g, '\\2a')
+        .replace(/\(/g, '\\28')
+        .replace(/\)/g, '\\29')
+        .replace(/\x00/g, '\\00');
+};
 
 /**
  * Authenticate user via LDAP
@@ -49,7 +63,7 @@ export const authenticateLdap = async (username, password) => {
             logger.info('[LDAP] Service bind OK, searching for user...');
 
             // Search for user
-            const searchFilter = config.ldap.searchFilter.replace('{{username}}', username);
+            const searchFilter = config.ldap.searchFilter.replace('{{username}}', escapeLdapFilter(username));
             const searchOptions = {
                 filter: searchFilter,
                 scope: 'sub',
@@ -153,7 +167,7 @@ export const searchLdapUsers = async (searchTerm) => {
             }
 
             const searchOptions = {
-                filter: `(|(${config.ldap.usernameAttribute}=*${searchTerm}*)(${config.ldap.displayNameAttribute}=*${searchTerm}*))`,
+                filter: `(|(${config.ldap.usernameAttribute}=*${escapeLdapFilter(searchTerm)}*)(${config.ldap.displayNameAttribute}=*${escapeLdapFilter(searchTerm)}*))`,
                 scope: 'sub',
                 sizeLimit: 20,
                 attributes: [

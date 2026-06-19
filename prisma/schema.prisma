@@ -4,7 +4,7 @@
 
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x"]
 }
 
 datasource db {
@@ -25,6 +25,8 @@ model User {
   role          Role      @default(USER)
   isActive      Boolean   @default(true) @map("is_active")
   ldapDn        String?   @map("ldap_dn")
+  ssoProvider   String?   @map("sso_provider")
+  ssoProviderId String?   @map("sso_provider_id")
   lastLoginAt   DateTime? @map("last_login_at")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
@@ -33,7 +35,10 @@ model User {
   shortLinks    ShortLink[]
   bioPage       BioPage?
   auditLogs     AuditLog[]
+  forms         Form[]
+  formCollaborations FormCollaborator[]
 
+  @@unique([ssoProvider, ssoProviderId])
   @@map("users")
 }
 
@@ -147,6 +152,215 @@ model ClickEvent {
 enum LinkType {
   SHORTLINK
   BIOLINK
+}
+
+// ===========================================
+// Form Models (Google Forms-like feature)
+// ===========================================
+enum FormQuestionType {
+  SHORT_TEXT
+  LONG_TEXT
+  MULTIPLE_CHOICE
+  CHECKBOXES
+  DROPDOWN
+  LINEAR_SCALE
+  DATE
+  TIME
+  FILE_UPLOAD
+  SECTION   // display-only: page-break + judul bagian
+  STATEMENT // display-only: narasi/teks
+  IMAGE     // display-only: gambar (URL di config.imageUrl)
+}
+
+model Form {
+  id                    String    @id @default(uuid())
+  userId                String    @map("user_id")
+  slug                  String    @unique
+  title                 String    @default("Untitled form")
+  description           String?
+  theme                 String    @default("default")
+  settings              Json?
+  isPublished           Boolean   @default(false) @map("is_published")
+  acceptingResponses    Boolean   @default(true) @map("accepting_responses")
+  collectEmail          Boolean   @default(false) @map("collect_email")
+  oneResponsePerSession Boolean   @default(true) @map("one_response_per_session")
+  closesAt              DateTime? @map("closes_at")
+  confirmationMessage   String?   @map("confirmation_message")
+  closedMessage         String?   @map("closed_message")
+  responseCount         Int       @default(0) @map("response_count")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions     FormQuestion[]
+  responses     FormResponse[]
+  dashboards    FormDashboard[]
+  collaborators FormCollaborator[]
+
+  @@index([userId])
+  @@index([slug])
+  @@map("forms")
+}
+
+enum FormRole {
+  EDITOR
+  VIEWER
+}
+
+model FormCollaborator {
+  id          String   @id @default(uuid())
+  formId      String   @map("form_id")
+  userId      String   @map("user_id")
+  role        FormRole @default(VIEWER)
+  invitedById String?  @map("invited_by_id") // audit only, no relation
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([formId, userId])
+  @@index([userId])
+  @@index([formId])
+  @@map("form_collaborators")
+}
+
+model FormQuestion {
+  id            String           @id @default(uuid())
+  formId        String           @map("form_id")
+  type          FormQuestionType
+  title         String           @default("")
+  description   String?
+  position      Int              @default(0)
+  isRequired    Boolean          @default(false) @map("is_required")
+  options       Json?
+  config        Json?
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  form          Form              @relation(fields: [formId], references: [id], onDelete: Cascade)
+  answers       FormAnswer[]
+  widgets       DashboardWidget[]
+
+  @@index([formId])
+  @@map("form_questions")
+}
+
+model FormResponse {
+  id              String   @id @default(uuid())
+  formId          String   @map("form_id")
+  idempotencyKey  String   @map("idempotency_key")
+  respondentEmail String?  @map("respondent_email")
+  ipAddress       String?  @map("ip_address")
+  userAgent       String?  @map("user_agent")
+  submittedAt     DateTime @default(now()) @map("submitted_at")
+
+  // Relations
+  form          Form            @relation(fields: [formId], references: [id], onDelete: Cascade)
+  answers       FormAnswer[]
+
+  @@unique([formId, idempotencyKey])
+  @@index([formId])
+  @@index([submittedAt])
+  @@map("form_responses")
+}
+
+model FormAnswer {
+  id            String    @id @default(uuid())
+  responseId    String    @map("response_id")
+  questionId    String    @map("question_id")
+  textValue     String?   @map("text_value") @db.Text
+  numberValue   Float?    @map("number_value")
+  dateValue     DateTime? @map("date_value")
+  optionId      String?   @map("option_id")
+  fileUrl       String?   @map("file_url")
+  fileName      String?   @map("file_name")
+  fileSize      Int?      @map("file_size")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  response      FormResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question      FormQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([responseId])
+  @@index([questionId])
+  @@map("form_answers")
+}
+
+// ===========================================
+// Form Dashboard Models (dynamic shareable dashboards over responses)
+// ===========================================
+enum WidgetType {
+  KPI             // single number (total responses, average, etc.)
+  BAR             // categorical distribution
+  PIE             // categorical distribution (share)
+  DONUT           // categorical distribution (share, hollow)
+  LINE            // time series (responses over time)
+  SCALE_HISTOGRAM // linear-scale value distribution
+  TABLE           // raw rows (free text / file list)
+  WORDCLOUD       // top-N word frequency over text answers
+}
+
+enum WidgetAggregation {
+  COUNT         // total number of answers/responses
+  DISTRIBUTION  // grouped counts by option/value
+  AVERAGE       // mean of numeric answers
+  SUM           // sum of numeric answers
+  MIN           // minimum numeric answer
+  MAX           // maximum numeric answer
+  OVER_TIME     // group responses by submittedAt bucket
+}
+
+enum DashboardVisibility {
+  PRIVATE // owner only
+  LINK    // anyone with the link (optionally password-gated)
+  PUBLIC  // discoverable / fully public
+}
+
+model FormDashboard {
+  id           String              @id @default(uuid())
+  formId       String              @map("form_id")
+  userId       String              @map("user_id") // denormalized owner: fast auth + listing
+  slug         String              @unique
+  title        String              @default("Untitled dashboard")
+  description  String?
+  theme        String              @default("default")
+  isPublished  Boolean             @default(false) @map("is_published")
+  visibility   DashboardVisibility @default(PRIVATE)
+  passwordHash String?             @map("password_hash")
+  layout       Json? // react-grid-layout positions: [{ i, x, y, w, h }]
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+
+  // Relations
+  form    Form              @relation(fields: [formId], references: [id], onDelete: Cascade)
+  widgets DashboardWidget[]
+
+  @@index([formId])
+  @@index([userId])
+  @@index([slug])
+  @@map("form_dashboards")
+}
+
+model DashboardWidget {
+  id          String            @id @default(uuid())
+  dashboardId String            @map("dashboard_id")
+  questionId  String?           @map("question_id") // null = form-level widget (OVER_TIME, total responses)
+  type        WidgetType
+  aggregation WidgetAggregation
+  title       String?
+  position    Int               @default(0)
+  config      Json? // colors, topN, bins, date granularity, showRawText, filters
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  dashboard FormDashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  question  FormQuestion? @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardId])
+  @@map("dashboard_widgets")
 }
 
 // ===========================================

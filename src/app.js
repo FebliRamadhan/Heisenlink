@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Express Application Setup
+// Heisenlink - Express Application Setup
 // ===========================================
 
 import express from 'express';

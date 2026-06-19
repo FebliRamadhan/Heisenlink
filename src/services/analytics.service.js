@@ -1,8 +1,9 @@
 // ===========================================
-// LinkHub - Analytics Service
+// Heisenlink - Analytics Service
 // ===========================================
 
 import prisma from '../config/database.js';
+import { Prisma } from '@prisma/client';
 import UAParser from 'ua-parser-js';
 import logger from '../utils/logger.js';
 
@@ -103,27 +104,34 @@ export const getOverview = async (userId, dateRange = {}) => {
     let clicksByDay = [];
 
     if (linkIds.length > 0 || bioLinkIds.length > 0) {
-        // Explicitly cast to uuid[] for Postgres
-        // Note: Prisma raw query handling of arrays can be tricky. 
-        // We'll use a safer approach if possible, or ensure arrays are valid.
-
         try {
-            clicksByDay = await prisma.$queryRaw`
+            // Build the query conditions dynamically to avoid IN (null)
+            const conditions = [];
+            if (linkIds.length > 0) {
+                conditions.push(Prisma.sql`short_link_id IN (${Prisma.join(linkIds)})`);
+            }
+            if (bioLinkIds.length > 0) {
+                conditions.push(Prisma.sql`bio_link_id IN (${Prisma.join(bioLinkIds)})`);
+            }
+
+            const whereClause = Prisma.sql`WHERE (${Prisma.join(conditions, ' OR ')}) AND clicked_at >= ${thirtyDaysAgo}`;
+
+            const rows = await prisma.$queryRaw`
                 SELECT 
                   DATE(clicked_at) as date,
                   COUNT(*) as clicks
                 FROM click_events
-                WHERE (
-                    short_link_id IN (${Object.keys(linkIds).length > 0 ? Prisma.join(linkIds) : null})
-                    OR 
-                    bio_link_id IN (${Object.keys(bioLinkIds).length > 0 ? Prisma.join(bioLinkIds) : null})
-                )
-                AND clicked_at >= ${thirtyDaysAgo}
+                ${whereClause}
                 GROUP BY DATE(clicked_at)
                 ORDER BY date DESC
             `;
+
+            // Explicitly cast BigInt counts to Number for JSON serialization
+            clicksByDay = rows.map(r => ({
+                date: r.date,
+                clicks: Number(r.clicks)
+            }));
         } catch (e) {
-            // Fallback or ignore if query fails
             logger.warn('Failed to fetch clicksByDay', e);
         }
     }
@@ -192,6 +200,205 @@ export const getOverview = async (userId, dateRange = {}) => {
         bioLinkClicks,
         clicksByDay,
         topLinks,
+        deviceBreakdown: deviceBreakdown.map(d => ({
+            device: d.deviceType || 'unknown',
+            count: d._count,
+        })),
+        browserBreakdown: browserBreakdown.map(b => ({
+            browser: b.browser || 'unknown',
+            count: b._count,
+        })),
+        osBreakdown: osBreakdown.map(o => ({
+            os: o.os || 'unknown',
+            count: o._count,
+        })),
+        referrerBreakdown: referrerBreakdown.map(r => ({
+            referrer: r.referrer,
+            count: r._count,
+        })),
+    };
+};
+
+/**
+ * Get global analytics overview (all users, all links) for admin
+ * @param {object} dateRange - Date range filter
+ * @returns {Promise<object>}
+ */
+export const getGlobalOverview = async (dateRange = {}) => {
+    const { from, to } = dateRange;
+
+    const dateFilter = {};
+    if (from) dateFilter.gte = new Date(from);
+    if (to) dateFilter.lte = new Date(to);
+
+    const hasDateFilter = Object.keys(dateFilter).length > 0;
+    const clickDateWhere = hasDateFilter ? { clickedAt: dateFilter } : undefined;
+
+    // Get global counts
+    const [totalUsers, activeUsers, totalLinks, totalBioPages, shortlinkClicks, bioLinkClicks, recentUsers] = await Promise.all([
+        prisma.user.count(),
+        prisma.user.count({ where: { isActive: true } }),
+        prisma.shortLink.count(),
+        prisma.bioPage.count(),
+        prisma.clickEvent.count({
+            where: {
+                linkType: 'SHORTLINK',
+                ...(hasDateFilter && { clickedAt: dateFilter }),
+            },
+        }),
+        prisma.clickEvent.count({
+            where: {
+                linkType: 'BIOLINK',
+                ...(hasDateFilter && { clickedAt: dateFilter }),
+            },
+        }),
+        prisma.user.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+            select: {
+                username: true,
+                displayName: true,
+                createdAt: true,
+            },
+        }),
+    ]);
+
+    // Clicks by day (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    let clicksByDay = [];
+    try {
+        const rows = await prisma.$queryRaw`
+            SELECT 
+              DATE(clicked_at) as date,
+              COUNT(*) as clicks
+            FROM click_events
+            WHERE clicked_at >= ${thirtyDaysAgo}
+            GROUP BY DATE(clicked_at)
+            ORDER BY date DESC
+        `;
+
+        // Explicitly cast BigInt counts to Number for JSON serialization
+        clicksByDay = rows.map(r => ({
+            date: r.date,
+            clicks: Number(r.clicks)
+        }));
+    } catch (e) {
+        logger.warn('Failed to fetch global clicksByDay', e);
+    }
+
+    // Top performing links (globally)
+    let topLinks = [];
+    try {
+        topLinks = await prisma.shortLink.findMany({
+            orderBy: { clickCount: 'desc' },
+            take: 10,
+            select: {
+                id: true,
+                code: true,
+                title: true,
+                clickCount: true,
+                user: {
+                    select: { username: true, displayName: true },
+                },
+            },
+        });
+    } catch (e) {
+        logger.warn('Failed to fetch topLinks', e);
+    }
+
+    // Top users by links
+    let topUsersByLinks = [];
+    try {
+        topUsersByLinks = await prisma.user.findMany({
+            select: {
+                username: true,
+                displayName: true,
+                _count: { select: { shortLinks: true } },
+            },
+            orderBy: { shortLinks: { _count: 'desc' } },
+            take: 5,
+        });
+    } catch (e) {
+        logger.warn('Failed to fetch topUsersByLinks', e);
+    }
+
+    // Global breakdowns — only apply where if date filter exists
+    const groupByWhere = hasDateFilter ? { clickedAt: dateFilter } : undefined;
+
+    let deviceBreakdown = [];
+    let browserBreakdown = [];
+    let osBreakdown = [];
+    let referrerBreakdown = [];
+
+    try {
+        deviceBreakdown = await prisma.clickEvent.groupBy({
+            by: ['deviceType'],
+            ...(groupByWhere && { where: groupByWhere }),
+            _count: true,
+        });
+    } catch (e) {
+        logger.warn('Failed to fetch deviceBreakdown', e);
+    }
+
+    try {
+        browserBreakdown = await prisma.clickEvent.groupBy({
+            by: ['browser'],
+            ...(groupByWhere && { where: groupByWhere }),
+            _count: true,
+        });
+    } catch (e) {
+        logger.warn('Failed to fetch browserBreakdown', e);
+    }
+
+    try {
+        osBreakdown = await prisma.clickEvent.groupBy({
+            by: ['os'],
+            ...(groupByWhere && { where: groupByWhere }),
+            _count: true,
+        });
+    } catch (e) {
+        logger.warn('Failed to fetch osBreakdown', e);
+    }
+
+    try {
+        referrerBreakdown = await prisma.clickEvent.groupBy({
+            by: ['referrer'],
+            where: {
+                referrer: { not: null },
+                ...(hasDateFilter && { clickedAt: dateFilter }),
+            },
+            _count: true,
+            orderBy: { _count: { referrer: 'desc' } },
+            take: 10,
+        });
+    } catch (e) {
+        logger.warn('Failed to fetch referrerBreakdown', e);
+    }
+
+    return {
+        totalUsers,
+        activeUsers,
+        totalLinks,
+        totalBioPages,
+        totalClicks: shortlinkClicks + bioLinkClicks,
+        shortlinkClicks,
+        bioLinkClicks,
+        clicksByDay,
+        topLinks: topLinks.map(l => ({
+            id: l.id,
+            code: l.code,
+            title: l.title,
+            clickCount: l.clickCount,
+            owner: l.user?.displayName || l.user?.username,
+        })),
+        topUsersByLinks: topUsersByLinks.map(u => ({
+            username: u.username,
+            displayName: u.displayName,
+            linksCount: u._count.shortLinks,
+        })),
+        recentUsers,
         deviceBreakdown: deviceBreakdown.map(d => ({
             device: d.deviceType || 'unknown',
             count: d._count,
@@ -311,5 +518,6 @@ export const getLinkAnalytics = async (linkId, dateRange = {}) => {
 export default {
     trackClick,
     getOverview,
+    getGlobalOverview,
     getLinkAnalytics,
 };

@@ -1,8 +1,10 @@
 // ===========================================
-// LinkHub - Auth Controller
+// Heisenlink - Auth Controller
 // ===========================================
 
 import * as authService from '../services/auth.service.js';
+import * as ssoService from '../services/sso.service.js';
+import config from '../config/index.js';
 import { formatResponse } from '../utils/helpers.js';
 
 /**
@@ -85,10 +87,51 @@ export const updatePassword = async (req, res, next) => {
     }
 };
 
+/**
+ * Get SSO configuration (public)
+ * GET /api/auth/sso/config
+ */
+export const getSsoConfig = async (req, res, next) => {
+    try {
+        const { enabled, clientId, authorizeUrl, redirectUri, scopes, logoutUrl } = config.sso;
+
+        res.json(formatResponse({
+            enabled,
+            clientId,
+            authorizeUrl,
+            redirectUri,
+            logoutUrl,
+            scopes,
+        }));
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Handle SSO callback
+ * POST /api/auth/sso/callback
+ */
+export const ssoCallback = async (req, res, next) => {
+    try {
+        const { code, codeVerifier } = req.body;
+        const ipAddress = req.ip || req.headers['x-forwarded-for']?.split(',')[0];
+        const userAgent = req.headers['user-agent'];
+
+        const result = await ssoService.handleCallback(code, codeVerifier, { ipAddress, userAgent });
+
+        res.json(formatResponse(result));
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     login,
     logout,
     getMe,
     refreshToken,
     updatePassword,
+    getSsoConfig,
+    ssoCallback,
 };

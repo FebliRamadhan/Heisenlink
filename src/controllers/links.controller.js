@@ -1,10 +1,12 @@
 // ===========================================
-// LinkHub - Links Controller
+// Heisenlink - Links Controller
 // ===========================================
 
+import prisma from '../config/database.js';
+import config from '../config/index.js';
 import * as linksService from '../services/links.service.js';
 import * as qrcodeService from '../services/qrcode.service.js';
-import { formatResponse } from '../utils/helpers.js';
+import { formatResponse, escapeCsvField } from '../utils/helpers.js';
 
 /**
  * Get user's links
@@ -112,7 +114,14 @@ export const bulkCreate = async (req, res, next) => {
     try {
         const { links } = req.body;
 
-        const result = await linksService.bulkCreateLinks(links, req.user.sub);
+        // Filter out entries with empty or whitespace-only URLs
+        const validLinks = links.filter(link => link.url && link.url.trim().length > 0);
+
+        if (validLinks.length === 0) {
+            return res.status(400).json(formatResponse(null, null, 'No valid links provided'));
+        }
+
+        const result = await linksService.bulkCreateLinks(validLinks, req.user.sub);
 
         res.status(201).json(formatResponse(result));
     } catch (error) {
@@ -141,6 +150,60 @@ export const verifyPassword = async (req, res, next) => {
     }
 };
 
+/**
+ * Export user's links as CSV or JSON
+ * GET /api/links/export
+ */
+export const exportLinks = async (req, res, next) => {
+    try {
+        const { format = 'csv' } = req.query;
+        const userId = req.user.sub;
+
+        const links = await prisma.shortLink.findMany({
+            where: { userId },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        if (format === 'json') {
+            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Content-Disposition', 'attachment; filename="my-links-export.json"');
+            return res.json(links.map(link => ({
+                code: link.code,
+                shortUrl: `${config.domains.shortlink}/${link.code}`,
+                destinationUrl: link.destinationUrl,
+                title: link.title,
+                clickCount: link.clickCount,
+                isActive: link.isActive,
+                startsAt: link.startsAt,
+                expiresAt: link.expiresAt,
+                createdAt: link.createdAt,
+            })));
+        }
+
+        // CSV format
+        const csvHeader = 'Code,Short URL,Destination URL,Title,Clicks,Active,Starts At,Expires At,Created At\n';
+        const csvRows = links.map(link =>
+            [
+                escapeCsvField(link.code),
+                escapeCsvField(`${config.domains.shortlink}/${link.code}`),
+                escapeCsvField(link.destinationUrl),
+                escapeCsvField(link.title),
+                escapeCsvField(link.clickCount),
+                escapeCsvField(link.isActive),
+                escapeCsvField(link.startsAt),
+                escapeCsvField(link.expiresAt),
+                escapeCsvField(link.createdAt),
+            ].join(',')
+        ).join('\n');
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="my-links-export.csv"');
+        res.send(csvHeader + csvRows);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     getLinks,
     createLink,
@@ -150,4 +213,5 @@ export default {
     getQRCode,
     bulkCreate,
     verifyPassword,
+    exportLinks,
 };

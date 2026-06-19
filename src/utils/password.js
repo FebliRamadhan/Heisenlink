@@ -1,8 +1,9 @@
 // ===========================================
-// LinkHub - Password Utilities
+// Heisenlink - Password Utilities
 // ===========================================
 
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 const SALT_ROUNDS = 12;
 
@@ -34,7 +35,7 @@ export const generateRandomPassword = (length = 16) => {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let password = '';
     for (let i = 0; i < length; i++) {
-        password += chars.charAt(Math.floor(Math.random() * chars.length));
+        password += chars.charAt(crypto.randomInt(0, chars.length));
     }
     return password;
 };

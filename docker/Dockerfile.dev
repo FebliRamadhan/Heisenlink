@@ -6,6 +6,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# OpenSSL is required for Prisma to detect the right query engine on Alpine.
+# Without it Prisma mis-detects and loads the openssl-1.1.x engine, which needs
+# libssl.so.1.1 (absent on node:20-alpine → OpenSSL 3.x) and crashes at startup.
+RUN apk add --no-cache openssl libc6-compat
+
 # Install dependencies
 COPY package*.json ./
 RUN npm install

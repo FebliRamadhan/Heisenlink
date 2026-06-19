@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Redis Client Configuration
+// Heisenlink - Redis Client Configuration
 // ===========================================
 
 import Redis from 'ioredis';

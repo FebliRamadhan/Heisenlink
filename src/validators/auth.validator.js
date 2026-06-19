@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Auth Validators
+// Heisenlink - Auth Validators
 // ===========================================
 
 import { z } from 'zod';
@@ -48,8 +48,21 @@ export const updatePasswordSchema = z.object({
     path: ['confirmPassword'],
 });
 
+/**
+ * SSO callback request schema
+ */
+export const ssoCallbackSchema = z.object({
+    code: z
+        .string()
+        .min(1, 'Authorization code is required'),
+    codeVerifier: z
+        .string()
+        .min(1, 'Code verifier is required'),
+});
+
 export default {
     loginSchema,
     refreshTokenSchema,
     updatePasswordSchema,
+    ssoCallbackSchema,
 };

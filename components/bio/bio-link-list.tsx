@@ -25,7 +25,18 @@ import { useState } from 'react';
 import api from '@/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 
 interface BioLinkListProps {
@@ -52,10 +63,6 @@ export function BioLinkList({ links }: BioLinkListProps) {
 
             const newItems = arrayMove(links, oldIndex, newIndex);
 
-            // Optimistic update?
-            // For now just wait for API
-            // Actually we need to call reorder API
-
             try {
                 await api.patch('/bio/links/reorder', {
                     linkIds: newItems.map(i => i.id)
@@ -80,12 +87,14 @@ export function BioLinkList({ links }: BioLinkListProps) {
                     items={links.map(l => l.id)}
                     strategy={verticalListSortingStrategy}
                 >
-                    {links.map((link) => (
-                        <SortableLinkItem key={link.id} link={link} />
-                    ))}
+                    <ul className="space-y-3 list-none p-0 m-0">
+                        {links.map((link) => (
+                            <SortableLinkItem key={link.id} link={link} />
+                        ))}
+                    </ul>
                     {!links.length && (
                         <div className="text-center py-8 text-muted-foreground border-dashed border-2 rounded-lg">
-                            No links yet. Click "Add Link" to get started.
+                            No links yet. Click &ldquo;Add Link&rdquo; to get started.
                         </div>
                     )}
                 </SortableContext>
@@ -110,14 +119,35 @@ function SortableLinkItem({ link }: { link: any }) {
 
     const queryClient = useQueryClient();
     const { toast } = useToast();
+    const [confirmOpen, setConfirmOpen] = useState(false);
 
     const handleDelete = async () => {
         try {
             await api.delete(`/bio/links/${link.id}`)
             queryClient.invalidateQueries({ queryKey: ["bio"] })
-            toast({ title: "Link removed" })
+            toast({
+                title: "Link removed",
+                description: `“${link.title}” was deleted.`,
+                action: (
+                    <ToastAction
+                        altText="Undo deletion"
+                        onClick={async () => {
+                            try {
+                                await api.post('/bio/links', { title: link.title, url: link.url })
+                                queryClient.invalidateQueries({ queryKey: ["bio"] })
+                            } catch {
+                                toast({ title: "Failed to restore link", variant: "destructive" })
+                            }
+                        }}
+                    >
+                        Undo
+                    </ToastAction>
+                ),
+            })
         } catch (e) {
             toast({ title: "Failed to delete", variant: "destructive" })
+        } finally {
+            setConfirmOpen(false)
         }
     }
 
@@ -131,21 +161,57 @@ function SortableLinkItem({ link }: { link: any }) {
     }
 
     return (
-        <div ref={setNodeRef} style={style} className="flex items-center gap-3 bg-card border p-3 rounded-lg shadow-sm">
-            <div {...attributes} {...listeners} className="cursor-grab text-muted-foreground hover:text-foreground">
-                <GripVertical className="h-5 w-5" />
-            </div>
+        <li ref={setNodeRef} style={style} className="flex items-center gap-3 bg-card border p-3 rounded-lg shadow-sm">
+            <button
+                type="button"
+                {...attributes}
+                {...listeners}
+                className="cursor-grab text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                aria-label={`Reorder ${link.title}`}
+            >
+                <GripVertical className="h-5 w-5" aria-hidden="true" />
+            </button>
             <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{link.title}</div>
                 <div className="text-xs text-muted-foreground truncate">{link.url}</div>
             </div>
             <div className="flex items-center gap-2">
-                <Switch checked={link.isVisible} onCheckedChange={toggleVisibility} />
-                <Button variant="ghost" size="icon" onClick={handleDelete} className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                    <Trash className="h-4 w-4" />
+                <Switch
+                    checked={link.isVisible}
+                    onCheckedChange={toggleVisibility}
+                    aria-label={`Toggle visibility for ${link.title}`}
+                />
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setConfirmOpen(true)}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    aria-label={`Delete ${link.title}`}
+                >
+                    <Trash className="h-4 w-4" aria-hidden="true" />
                 </Button>
             </div>
-        </div>
+
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this link?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            &ldquo;{link.title}&rdquo; will be removed from your bio page. You can undo right after.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDelete}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </li>
     );
 }
 
@@ -178,7 +244,7 @@ function AddLinkDialog() {
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button className="w-full">
-                    <Plus className="mr-2 h-4 w-4" /> Add Link
+                    <Plus className="mr-2 h-4 w-4" aria-hidden="true" /> Add Link
                 </Button>
             </DialogTrigger>
             <DialogContent>
@@ -187,26 +253,32 @@ function AddLinkDialog() {
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <Label>Title</Label>
+                        <Label htmlFor="bio-link-title">Title</Label>
                         <Input
+                            id="bio-link-title"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="My Portfolio"
                             required
+                            autoComplete="off"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label>URL</Label>
+                        <Label htmlFor="bio-link-url">URL</Label>
                         <Input
+                            id="bio-link-url"
+                            type="url"
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
                             placeholder="https://..."
                             required
+                            autoComplete="off"
+                            inputMode="url"
                         />
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading}>
-                            {loading ? "Adding..." : "Add Link"}
+                            {loading ? "Adding…" : "Add Link"}
                         </Button>
                     </DialogFooter>
                 </form>

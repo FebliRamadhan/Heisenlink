@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - LDAP Configuration
+// Heisenlink - LDAP Configuration
 // ===========================================
 
 import ldap from 'ldapjs';

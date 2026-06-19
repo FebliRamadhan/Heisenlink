@@ -1,5 +1,5 @@
 // ===========================================
-// LinkHub - Error Handling Middleware
+// Heisenlink - Error Handling Middleware
 // ===========================================
 
 import logger from '../utils/logger.js';
