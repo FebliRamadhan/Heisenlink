@@ -108,13 +108,22 @@ export function FormsTable({ forms, pagination, onPageChange }: FormsTableProps)
                     <TableBody>
                         {forms.map((form) => {
                             const status = statusOf(form)
+                            const isOwner = form.isOwner ?? true
+                            const canEdit = form.myRole !== "VIEWER"
                             return (
                                 <TableRow key={form.id}>
                                     <TableCell>
                                         <div className="flex flex-col space-y-1">
-                                            <Link href={`/dashboard/forms/${form.id}`} className="font-medium hover:underline">
-                                                {form.title}
-                                            </Link>
+                                            <div className="flex items-center gap-2">
+                                                <Link href={`/dashboard/forms/${form.id}`} className="font-medium hover:underline">
+                                                    {form.title}
+                                                </Link>
+                                                {!isOwner && (
+                                                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium capitalize text-muted-foreground">
+                                                        Shared · {canEdit ? "Editor" : "Viewer"}
+                                                    </span>
+                                                )}
+                                            </div>
                                             <a
                                                 href={form.url}
                                                 target="_blank"
@@ -144,7 +153,7 @@ export function FormsTable({ forms, pagination, onPageChange }: FormsTableProps)
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                 <DropdownMenuItem asChild>
                                                     <Link href={`/dashboard/forms/${form.id}`}>
-                                                        <Edit className="mr-2 h-4 w-4" /> Edit
+                                                        <Edit className="mr-2 h-4 w-4" /> {canEdit ? "Edit" : "View"}
                                                     </Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem asChild>
@@ -158,10 +167,14 @@ export function FormsTable({ forms, pagination, onPageChange }: FormsTableProps)
                                                 <DropdownMenuItem onClick={() => duplicate(form.id)}>
                                                     <Copy className="mr-2 h-4 w-4" /> Duplicate
                                                 </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem className="text-red-600" onClick={() => setPendingDelete(form)}>
-                                                    <Trash className="mr-2 h-4 w-4" /> Delete
-                                                </DropdownMenuItem>
+                                                {isOwner && (
+                                                    <>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem className="text-red-600" onClick={() => setPendingDelete(form)}>
+                                                            <Trash className="mr-2 h-4 w-4" /> Delete
+                                                        </DropdownMenuItem>
+                                                    </>
+                                                )}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>

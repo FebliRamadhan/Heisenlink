@@ -36,6 +36,7 @@ model User {
   bioPage       BioPage?
   auditLogs     AuditLog[]
   forms         Form[]
+  formCollaborations FormCollaborator[]
 
   @@unique([ssoProvider, ssoProviderId])
   @@map("users")
@@ -195,10 +196,33 @@ model Form {
   questions     FormQuestion[]
   responses     FormResponse[]
   dashboards    FormDashboard[]
+  collaborators FormCollaborator[]
 
   @@index([userId])
   @@index([slug])
   @@map("forms")
+}
+
+enum FormRole {
+  EDITOR
+  VIEWER
+}
+
+model FormCollaborator {
+  id          String   @id @default(uuid())
+  formId      String   @map("form_id")
+  userId      String   @map("user_id")
+  role        FormRole @default(VIEWER)
+  invitedById String?  @map("invited_by_id") // audit only, no relation
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([formId, userId])
+  @@index([userId])
+  @@index([formId])
+  @@map("form_collaborators")
 }
 
 model FormQuestion {

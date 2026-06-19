@@ -169,6 +169,20 @@ export const slugParamSchema = z.object({
     slug: z.string().min(1),
 });
 
+// ===========================================
+// Collaborator schemas
+// ===========================================
+
+export const addCollaboratorSchema = z.object({
+    email: z.string().email('Invalid email'),
+    role: z.enum(['EDITOR', 'VIEWER']).optional(),
+});
+
+export const collaboratorParamSchema = z.object({
+    id: z.string().uuid('Invalid form ID'),
+    userId: z.string().uuid('Invalid user ID'),
+});
+
 export const slugQuerySchema = z.object({
     slug: z.string().min(1),
 });
@@ -197,4 +211,6 @@ export default {
     slugQuerySchema,
     listFormsQuerySchema,
     listResponsesQuerySchema,
+    addCollaboratorSchema,
+    collaboratorParamSchema,
 };

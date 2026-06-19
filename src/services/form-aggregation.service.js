@@ -6,7 +6,7 @@
 // summaries, and CSV export. No caching (responses change on every submit).
 
 import prisma from '../config/database.js';
-import { assertFormOwner, formatQuestion } from './forms.service.js';
+import { assertFormAccess, formatQuestion } from './forms.service.js';
 import { escapeCsvField } from '../utils/helpers.js';
 import {
     answerToText,
@@ -23,7 +23,7 @@ const CHOICE_TYPES = new Set(['MULTIPLE_CHOICE', 'CHECKBOXES', 'DROPDOWN']);
  * Paginated individual responses for a form (owner-only).
  */
 export const listResponses = async (formId, userId, role, { page = 1, limit = 20 } = {}) => {
-    await assertFormOwner(formId, userId, role);
+    await assertFormAccess(formId, userId, role, 'VIEWER');
     const skip = (page - 1) * limit;
 
     const [responses, total] = await Promise.all([
@@ -57,7 +57,7 @@ export const listResponses = async (formId, userId, role, { page = 1, limit = 20
  * Per-question summary for a form (owner-only).
  */
 export const getSummary = async (formId, userId, role) => {
-    const form = await assertFormOwner(formId, userId, role, {
+    const { form } = await assertFormAccess(formId, userId, role, 'VIEWER', {
         include: { questions: { orderBy: { position: 'asc' } } },
     });
 
@@ -101,7 +101,7 @@ export const getSummary = async (formId, userId, role) => {
  * @returns {Promise<{form: object, header: string[], rows: string[][]}>}
  */
 const buildTable = async (formId, userId, role) => {
-    const form = await assertFormOwner(formId, userId, role, {
+    const { form } = await assertFormAccess(formId, userId, role, 'VIEWER', {
         include: { questions: { orderBy: { position: 'asc' } } },
     });
 

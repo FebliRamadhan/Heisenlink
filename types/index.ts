@@ -108,8 +108,25 @@ export interface Form {
   responseCount: number;
   questionCount?: number;
   questions?: FormQuestion[];
+  myRole?: FormRole;
+  isOwner?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export type FormRole = "OWNER" | "EDITOR" | "VIEWER";
+
+export interface FormCollaborator {
+  id: string;
+  role: Exclude<FormRole, "OWNER">;
+  createdAt: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+  };
 }
 
 export interface PublicForm {

@@ -21,6 +21,7 @@ import { useState, useEffect } from "react";
 import { FormBuilder } from "@/components/forms/form-builder";
 import { FormSettings } from "@/components/forms/form-settings";
 import { FormPreview } from "@/components/forms/form-preview";
+import { ShareFormDialog } from "@/components/forms/share-form-dialog";
 import type { Form } from "@/types";
 
 export default function FormEditorPage({ params }: { params: { id: string } }) {
@@ -88,6 +89,9 @@ export default function FormEditorPage({ params }: { params: { id: string } }) {
   const togglePublish = (checked: boolean) =>
     updateMutation.mutate({ isPublished: checked });
 
+  const isOwner = form.isOwner ?? true;
+  const canEdit = form.myRole !== "VIEWER";
+
   return (
     <div className="flex-1 space-y-6 p-8 pt-6">
       {/* Header */}
@@ -102,20 +106,29 @@ export default function FormEditorPage({ params }: { params: { id: string } }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onBlur={() =>
-              title !== form.title && updateMutation.mutate({ title })
+              canEdit && title !== form.title && updateMutation.mutate({ title })
             }
+            readOnly={!canEdit}
             className="text-lg font-semibold border-0 shadow-none focus-visible:ring-1 px-1 max-w-md"
             aria-label="Form title"
           />
+          {!isOwner && (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium capitalize">
+              {canEdit ? "Shared · Editor" : "Shared · Viewer"}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm">
-            <Switch
-              checked={form.isPublished}
-              onCheckedChange={togglePublish}
-            />
-            {form.isPublished ? "Published" : "Draft"}
-          </label>
+          {canEdit && (
+            <label className="flex items-center gap-2 text-sm">
+              <Switch
+                checked={form.isPublished}
+                onCheckedChange={togglePublish}
+              />
+              {form.isPublished ? "Published" : "Draft"}
+            </label>
+          )}
+          {isOwner && <ShareFormDialog formId={id} />}
           <Button
             variant="outline"
             size="sm"
@@ -145,25 +158,35 @@ export default function FormEditorPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      <Tabs value={tab} onValueChange={setTab}>
-        <TabsList>
-          <TabsTrigger value="questions">Questions</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-          <TabsTrigger value="preview">Preview</TabsTrigger>
-        </TabsList>
+      {canEdit ? (
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList>
+            <TabsTrigger value="questions">Questions</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="questions" className="mt-6">
-          <FormBuilder form={form} />
-        </TabsContent>
+          <TabsContent value="questions" className="mt-6">
+            <FormBuilder form={form} />
+          </TabsContent>
 
-        <TabsContent value="settings" className="mt-6 max-w-2xl">
-          <FormSettings form={form} />
-        </TabsContent>
+          <TabsContent value="settings" className="mt-6 max-w-2xl">
+            <FormSettings form={form} />
+          </TabsContent>
 
-        <TabsContent value="preview" className="mt-6">
+          <TabsContent value="preview" className="mt-6">
+            <FormPreview form={form} />
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <div className="space-y-4">
+          <div className="rounded-md border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+            You have view-only access to this form. You can see its questions and
+            responses but cannot make changes.
+          </div>
           <FormPreview form={form} />
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 }

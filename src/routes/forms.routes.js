@@ -21,6 +21,8 @@ import {
     slugParamSchema,
     listFormsQuerySchema,
     listResponsesQuerySchema,
+    addCollaboratorSchema,
+    collaboratorParamSchema,
 } from '../validators/forms.validator.js';
 
 const router = Router();
@@ -126,6 +128,27 @@ router.get(
 );
 router.get('/:id/summary', validateParams(formIdParamSchema), formsController.getSummary);
 router.get('/:id/responses/export', validateParams(formIdParamSchema), formsController.exportResponses);
+
+// ===========================================
+// Collaborators (owner-only)
+// ===========================================
+
+router.get(
+    '/:id/collaborators',
+    validateParams(formIdParamSchema),
+    formsController.listCollaborators
+);
+router.post(
+    '/:id/collaborators',
+    validateParams(formIdParamSchema),
+    validateBody(addCollaboratorSchema),
+    formsController.addCollaborator
+);
+router.delete(
+    '/:id/collaborators/:userId',
+    validateParams(collaboratorParamSchema),
+    formsController.removeCollaborator
+);
 
 // ===========================================
 // Questions

@@ -80,6 +80,55 @@ export const assertFormOwner = async (formId, userId, role = 'USER', options = {
     return form;
 };
 
+// Collaboration access levels, ordered from least to most privileged.
+const ACCESS_LEVELS = { VIEWER: 1, EDITOR: 2, OWNER: 3 };
+
+/**
+ * Resolve a user's effective access level on a form.
+ * OWNER = form owner or global ADMIN; otherwise the collaborator role (EDITOR/VIEWER); null if none.
+ * @returns {Promise<{form: object, accessLevel: 'OWNER'|'EDITOR'|'VIEWER'|null}>}
+ */
+export const getFormAccess = async (formId, userId, role = 'USER', options = {}) => {
+    const form = await prisma.form.findUnique({
+        where: { id: formId },
+        ...options,
+        include: {
+            ...(options.include || {}),
+            collaborators: { where: { userId }, select: { role: true } },
+        },
+    });
+    if (!form) {
+        throw errors.notFound('Form not found');
+    }
+    let accessLevel = null;
+    if (form.userId === userId || role === 'ADMIN') {
+        accessLevel = 'OWNER';
+    } else if (form.collaborators.length > 0) {
+        accessLevel = form.collaborators[0].role; // EDITOR | VIEWER
+    }
+    return { form, accessLevel };
+};
+
+/**
+ * Fetch a form and assert the requesting user has at least `requiredLevel` access.
+ * Owners/ADMINs always pass; collaborators pass when their role is privileged enough.
+ * @param {'VIEWER'|'EDITOR'|'OWNER'} [requiredLevel]
+ * @returns {Promise<{form: object, accessLevel: string}>}
+ */
+export const assertFormAccess = async (
+    formId,
+    userId,
+    role = 'USER',
+    requiredLevel = 'VIEWER',
+    options = {}
+) => {
+    const { form, accessLevel } = await getFormAccess(formId, userId, role, options);
+    if (!accessLevel || ACCESS_LEVELS[accessLevel] < ACCESS_LEVELS[requiredLevel]) {
+        throw errors.forbidden('You do not have access to this form');
+    }
+    return { form, accessLevel };
+};
+
 // ===========================================
 // Form CRUD
 // ===========================================
@@ -120,7 +169,10 @@ export const createForm = async (userId, data = {}) => {
 };
 
 export const listForms = async (userId, { search, page = 1, limit = 20 } = {}) => {
-    const where = { userId };
+    // Owned forms plus forms shared with this user as a collaborator.
+    const where = {
+        OR: [{ userId }, { collaborators: { some: { userId } } }],
+    };
     if (search) {
         where.title = { contains: search, mode: 'insensitive' };
     }
@@ -135,13 +187,14 @@ export const listForms = async (userId, { search, page = 1, limit = 20 } = {}) =
             take: limit,
             include: {
                 _count: { select: { responses: true, questions: true } },
+                collaborators: { where: { userId }, select: { role: true } },
             },
         }),
         prisma.form.count({ where }),
     ]);
 
     return {
-        forms: forms.map(formatFormListItem),
+        forms: forms.map((form) => formatFormListItem(form, userId)),
         total,
         page,
         limit,
@@ -150,14 +203,14 @@ export const listForms = async (userId, { search, page = 1, limit = 20 } = {}) =
 };
 
 export const getFormById = async (formId, userId, role = 'USER') => {
-    const form = await assertFormOwner(formId, userId, role, {
+    const { form, accessLevel } = await assertFormAccess(formId, userId, role, 'VIEWER', {
         include: { questions: { orderBy: { position: 'asc' } } },
     });
-    return formatFormResponse(form);
+    return formatFormResponse(form, accessLevel);
 };
 
 export const updateForm = async (formId, userId, role, data = {}) => {
-    const form = await assertFormOwner(formId, userId, role);
+    const { form, accessLevel } = await assertFormAccess(formId, userId, role, 'EDITOR');
 
     const updateData = {};
     const assignable = [
@@ -209,7 +262,7 @@ export const updateForm = async (formId, userId, role, data = {}) => {
     }
 
     logger.info(`Updated form ${formId}`);
-    return formatFormResponse(updated);
+    return formatFormResponse(updated, accessLevel);
 };
 
 export const deleteForm = async (formId, userId, role) => {
@@ -221,7 +274,7 @@ export const deleteForm = async (formId, userId, role) => {
 };
 
 export const duplicateForm = async (formId, userId, role) => {
-    const form = await assertFormOwner(formId, userId, role, {
+    const { form } = await assertFormAccess(formId, userId, role, 'VIEWER', {
         include: { questions: { orderBy: { position: 'asc' } } },
     });
 
@@ -263,7 +316,7 @@ export const duplicateForm = async (formId, userId, role) => {
 // ===========================================
 
 export const addQuestion = async (formId, userId, role, data) => {
-    const form = await assertFormOwner(formId, userId, role);
+    const { form } = await assertFormAccess(formId, userId, role, 'EDITOR');
 
     const maxPosition = await prisma.formQuestion.aggregate({
         where: { formId },
@@ -289,7 +342,7 @@ export const addQuestion = async (formId, userId, role, data) => {
 };
 
 export const updateQuestion = async (formId, questionId, userId, role, data) => {
-    const form = await assertFormOwner(formId, userId, role);
+    const { form } = await assertFormAccess(formId, userId, role, 'EDITOR');
 
     const existing = await prisma.formQuestion.findUnique({ where: { id: questionId } });
     if (!existing || existing.formId !== formId) {
@@ -316,7 +369,7 @@ export const updateQuestion = async (formId, questionId, userId, role, data) => 
 };
 
 export const deleteQuestion = async (formId, questionId, userId, role) => {
-    const form = await assertFormOwner(formId, userId, role);
+    const { form } = await assertFormAccess(formId, userId, role, 'EDITOR');
 
     const existing = await prisma.formQuestion.findUnique({ where: { id: questionId } });
     if (!existing || existing.formId !== formId) {
@@ -330,7 +383,7 @@ export const deleteQuestion = async (formId, questionId, userId, role) => {
 };
 
 export const reorderQuestions = async (formId, userId, role, questionIds) => {
-    const form = await assertFormOwner(formId, userId, role);
+    const { form } = await assertFormAccess(formId, userId, role, 'EDITOR');
 
     await prisma.$transaction(
         questionIds.map((id, index) =>
@@ -390,7 +443,7 @@ export const formatQuestion = (q) => ({
     config: q.config ?? null,
 });
 
-const formatFormResponse = (form) => ({
+const formatFormResponse = (form, accessLevel = 'OWNER') => ({
     id: form.id,
     slug: form.slug,
     url: buildPublicUrl(form.slug),
@@ -407,24 +460,31 @@ const formatFormResponse = (form) => ({
     closedMessage: form.closedMessage,
     responseCount: form.responseCount,
     questions: form.questions ? form.questions.map(formatQuestion) : [],
+    myRole: accessLevel,
+    isOwner: accessLevel === 'OWNER',
     createdAt: form.createdAt,
     updatedAt: form.updatedAt,
 });
 
-const formatFormListItem = (form) => ({
-    id: form.id,
-    slug: form.slug,
-    url: buildPublicUrl(form.slug),
-    title: form.title,
-    description: form.description,
-    isPublished: form.isPublished,
-    acceptingResponses: form.acceptingResponses,
-    closesAt: form.closesAt,
-    responseCount: form.responseCount,
-    questionCount: form._count?.questions ?? 0,
-    createdAt: form.createdAt,
-    updatedAt: form.updatedAt,
-});
+const formatFormListItem = (form, userId) => {
+    const myRole = form.userId === userId ? 'OWNER' : form.collaborators?.[0]?.role ?? 'OWNER';
+    return {
+        id: form.id,
+        slug: form.slug,
+        url: buildPublicUrl(form.slug),
+        title: form.title,
+        description: form.description,
+        isPublished: form.isPublished,
+        acceptingResponses: form.acceptingResponses,
+        closesAt: form.closesAt,
+        responseCount: form.responseCount,
+        questionCount: form._count?.questions ?? 0,
+        myRole,
+        isOwner: myRole === 'OWNER',
+        createdAt: form.createdAt,
+        updatedAt: form.updatedAt,
+    };
+};
 
 const formatPublicForm = (form) => ({
     id: form.id,

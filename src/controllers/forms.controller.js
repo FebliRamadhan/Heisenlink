@@ -5,6 +5,7 @@
 import * as formsService from '../services/forms.service.js';
 import * as submissionService from '../services/form-submission.service.js';
 import * as aggregationService from '../services/form-aggregation.service.js';
+import * as collaboratorsService from '../services/form-collaborators.service.js';
 import * as storageService from '../services/storage.service.js';
 import { formatResponse, parsePagination, createPaginationMeta } from '../utils/helpers.js';
 
@@ -257,8 +258,8 @@ export const uploadFormImage = async (req, res, next) => {
                 error: { code: 'NO_FILE', message: 'No file uploaded' },
             });
         }
-        // Ownership check before storing.
-        await formsService.assertFormOwner(req.params.id, req.user.sub, req.user.role);
+        // Editor-level access required before storing.
+        await formsService.assertFormAccess(req.params.id, req.user.sub, req.user.role, 'EDITOR');
         const stored = await storageService.storeBuffer({
             buffer: req.file.buffer,
             originalName: req.file.originalname,
@@ -339,6 +340,51 @@ export const exportResponses = async (req, res, next) => {
     }
 };
 
+// ===========================================
+// Collaborators (owner-only)
+// ===========================================
+
+export const listCollaborators = async (req, res, next) => {
+    try {
+        const collaborators = await collaboratorsService.listCollaborators(
+            req.params.id,
+            req.user.sub,
+            req.user.role
+        );
+        res.json(formatResponse(collaborators));
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const addCollaborator = async (req, res, next) => {
+    try {
+        const collaborator = await collaboratorsService.addCollaborator(
+            req.params.id,
+            req.user.sub,
+            req.user.role,
+            req.body
+        );
+        res.status(201).json(formatResponse(collaborator));
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const removeCollaborator = async (req, res, next) => {
+    try {
+        await collaboratorsService.removeCollaborator(
+            req.params.id,
+            req.user.sub,
+            req.user.role,
+            req.params.userId
+        );
+        res.json(formatResponse({ message: 'Collaborator removed successfully' }));
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     getPublicForm,
     submitForm,
@@ -358,4 +404,7 @@ export default {
     reorderQuestions,
     updateQuestion,
     deleteQuestion,
+    listCollaborators,
+    addCollaborator,
+    removeCollaborator,
 };
