@@ -60,6 +60,12 @@ export function Sidebar({ mobile, onNavigate }: SidebarProps = {}) {
             adminOnly: true,
         },
         {
+            href: "/dashboard/admin/forms",
+            title: "Manage Forms",
+            icon: ClipboardList,
+            adminOnly: true,
+        },
+        {
             href: "/dashboard/admin/users",
             title: "Manage Users",
             icon: Shield,

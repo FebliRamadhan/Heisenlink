@@ -245,6 +245,63 @@ export const getAllBioPages = async (req, res, next) => {
 };
 
 /**
+ * Get all forms (admin)
+ * GET /api/admin/forms
+ */
+export const getAllForms = async (req, res, next) => {
+    try {
+        const { page = 1, limit = 20, search, userId } = req.query;
+        const skip = (page - 1) * limit;
+
+        const where = {};
+        if (search) {
+            where.OR = [
+                { title: { contains: search, mode: 'insensitive' } },
+                { slug: { contains: search, mode: 'insensitive' } },
+            ];
+        }
+        if (userId) where.userId = userId;
+
+        const [forms, total] = await Promise.all([
+            prisma.form.findMany({
+                where,
+                select: {
+                    id: true,
+                    title: true,
+                    slug: true,
+                    isPublished: true,
+                    acceptingResponses: true,
+                    closesAt: true,
+                    responseCount: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    user: {
+                        select: { username: true, displayName: true },
+                    },
+                    _count: {
+                        select: { questions: true },
+                    },
+                },
+                orderBy: { updatedAt: 'desc' },
+                skip,
+                take: parseInt(limit),
+            }),
+            prisma.form.count({ where }),
+        ]);
+
+        const formattedForms = forms.map(f => ({
+            ...f,
+            questionCount: f._count.questions,
+            _count: undefined,
+        }));
+
+        res.json(formatResponse(formattedForms, createPaginationMeta(total, parseInt(page), parseInt(limit))));
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * Get global analytics (admin)
  * GET /api/admin/analytics
  */
@@ -406,6 +463,7 @@ export default {
     updateUser,
     getAllLinks,
     getAllBioPages,
+    getAllForms,
     deleteLink,
     getGlobalAnalytics,
     getAuditLogs,

@@ -131,6 +131,21 @@ router.get(
 );
 
 // ===========================================
+// Form Management Routes
+// ===========================================
+
+/**
+ * @route   GET /api/admin/forms
+ * @desc    Get all forms
+ * @access  Admin
+ */
+router.get(
+    '/forms',
+    validateQuery(linksQuerySchema), // same fields (page, limit, search, userId)
+    adminController.getAllForms
+);
+
+// ===========================================
 // Analytics Routes
 // ===========================================
 
