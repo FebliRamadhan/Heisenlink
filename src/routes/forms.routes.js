@@ -9,6 +9,7 @@ import { validateBody, validateParams, validateQuery } from '../middleware/valid
 import { authenticate } from '../middleware/auth.middleware.js';
 import { rateLimiters } from '../middleware/rateLimiter.middleware.js';
 import config from '../config/index.js';
+import { ApiError } from '../middleware/error.middleware.js';
 import {
     createFormSchema,
     updateFormSchema,
@@ -43,12 +44,12 @@ const ALLOWED_UPLOAD_TYPES = [
 
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: config.upload.maxFileSize },
+    limits: { fileSize: config.upload.formMaxFileSize },
     fileFilter: (req, file, cb) => {
         if (ALLOWED_UPLOAD_TYPES.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Unsupported file type'));
+            cb(new ApiError('Jenis file tidak didukung', 415, 'UNSUPPORTED_FILE_TYPE'));
         }
     },
 });

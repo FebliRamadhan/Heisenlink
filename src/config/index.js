@@ -76,7 +76,18 @@ const config = {
     // File Upload
     upload: {
         maxFileSize: parseInt(process.env.MAX_FILE_SIZE, 10) || 5 * 1024 * 1024, // 5MB
+        formMaxFileSize: parseInt(process.env.FORM_MAX_FILE_SIZE, 10) || 20 * 1024 * 1024, // 20MB
         dir: process.env.UPLOAD_DIR || './public/uploads',
+    },
+
+    // Background compression of form uploads (images via sharp, PDFs via Ghostscript)
+    compression: {
+        enabled: process.env.UPLOAD_COMPRESSION_ENABLED !== 'false',
+        minBytes: parseInt(process.env.UPLOAD_COMPRESSION_MIN_BYTES, 10) || 1024 * 1024, // 1MB
+        maxImageDimension: parseInt(process.env.UPLOAD_COMPRESSION_MAX_DIMENSION, 10) || 2560,
+        concurrency: parseInt(process.env.UPLOAD_COMPRESSION_CONCURRENCY, 10) || 1,
+        maxQueue: parseInt(process.env.UPLOAD_COMPRESSION_MAX_QUEUE, 10) || 5,
+        timeoutMs: parseInt(process.env.UPLOAD_COMPRESSION_TIMEOUT_MS, 10) || 120000,
     },
 
     // S3 / Object Storage (AWS S3, MinIO, R2, etc.)

@@ -88,6 +88,18 @@ export const errorHandler = (err, req, res, next) => {
         message = 'Token expired';
     }
 
+    // Handle upload errors (multer)
+    if (err.name === 'MulterError') {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            statusCode = 413;
+            code = 'FILE_TOO_LARGE';
+            message = 'Ukuran file terlalu besar';
+        } else {
+            statusCode = 400;
+            message = err.message;
+        }
+    }
+
     // Handle validation errors (Zod)
     if (err.name === 'ZodError') {
         statusCode = 422;

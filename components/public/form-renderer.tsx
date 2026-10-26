@@ -7,6 +7,7 @@ import { FormSidebar, type StepItem } from "@/components/public/form-sidebar"
 import { FormReview } from "@/components/public/form-review"
 import { useFormAutosave } from "@/hooks/use-form-autosave"
 import { useFormSubmit } from "@/hooks/use-form-submit"
+import { maxUploadMb } from "@/lib/form-upload"
 import type { PublicForm, FormQuestion, FormAnswerInput, UploadedFileRef } from "@/types"
 
 // Split questions into wizard pages on SECTION boundaries.
@@ -121,6 +122,13 @@ export function FormRenderer({ form }: { form: PublicForm }) {
     }
 
     const handleUpload = async (q: FormQuestion, files: FileList) => {
+        const limitMb = maxUploadMb(q)
+        const tooBig = Array.from(files).find((f) => f.size > limitMb * 1024 * 1024)
+        if (tooBig) {
+            setErrors((e) => ({ ...e, [q.id]: `Ukuran file "${tooBig.name}" melebihi batas ${limitMb} MB` }))
+            return
+        }
+
         setUploading((u) => ({ ...u, [q.id]: true }))
         try {
             const refs: UploadedFileRef[] = []
@@ -128,14 +136,20 @@ export function FormRenderer({ form }: { form: PublicForm }) {
                 const fd = new FormData()
                 fd.append("file", file)
                 const res = await fetch(`/api/forms/public/${form.slug}/upload`, { method: "POST", body: fd })
-                if (!res.ok) throw new Error("upload failed")
+                if (!res.ok) {
+                    // nginx 413 returns HTML, so don't rely on a JSON body for that case
+                    if (res.status === 413) throw new Error(`Ukuran file melebihi batas ${limitMb} MB`)
+                    const body = await res.json().catch(() => null)
+                    throw new Error(body?.error?.message || "Unggahan gagal — silakan coba lagi")
+                }
                 const data = await res.json()
                 refs.push(data.data as UploadedFileRef)
             }
             setAnswers((prev) => ({ ...prev, [q.id]: refs }))
             setErrors((e) => ({ ...e, [q.id]: "" }))
-        } catch {
-            setErrors((e) => ({ ...e, [q.id]: "Unggahan gagal — silakan coba lagi" }))
+        } catch (err) {
+            const message = err instanceof TypeError ? "Unggahan gagal — periksa koneksi lalu coba lagi" : (err as Error).message
+            setErrors((e) => ({ ...e, [q.id]: message }))
         } finally {
             setUploading((u) => ({ ...u, [q.id]: false }))
         }

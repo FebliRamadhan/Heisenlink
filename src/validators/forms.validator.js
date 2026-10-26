@@ -41,7 +41,7 @@ const configSchema = z
         allowFuture: z.boolean().optional(),
         // file
         accept: z.array(z.string()).optional(),
-        maxSizeMb: z.number().positive().max(50).optional(),
+        maxSizeMb: z.number().positive().max(20).optional(), // server cap: FORM_MAX_FILE_SIZE
         maxFiles: z.number().int().positive().max(10).optional(),
         // image (display-only)
         imageUrl: z.string().max(2048).optional(),

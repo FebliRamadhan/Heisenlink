@@ -25,6 +25,9 @@ RUN npx prisma generate
 FROM base AS runner
 WORKDIR /app
 
+# Ghostscript for background PDF compression of form uploads
+RUN apk add --no-cache ghostscript
+
 ENV NODE_ENV=production
 
 # Create non-root user

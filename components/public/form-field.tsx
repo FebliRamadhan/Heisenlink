@@ -1,6 +1,7 @@
 "use client"
 
 import type { FormQuestion, UploadedFileRef } from "@/types"
+import { maxUploadMb } from "@/lib/form-upload"
 
 /* Tiny inline icons ported from design/components.jsx */
 function CheckIcon() {
@@ -158,6 +159,9 @@ export function FormField({ question, value, onChange, error, disabled, idPrefix
                         multiple={(question.config?.maxFiles ?? 1) > 1}
                         accept={question.config?.accept?.join(",")}
                         onChange={(e) => onChange(e.target.files)} style={{ maxWidth: 420, padding: "10px 14px" }} />
+                )}
+                {question.type === "FILE_UPLOAD" && (
+                    <p className="f-hint">Ukuran maksimal {maxUploadMb(question)} MB per file</p>
                 )}
 
                 {children}

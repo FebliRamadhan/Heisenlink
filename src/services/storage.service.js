@@ -11,12 +11,14 @@ import path from 'path';
 import { nanoid } from 'nanoid';
 import config from '../config/index.js';
 import * as s3Service from './s3.service.js';
+import { scheduleCompression } from './file-compression.service.js';
 import logger from '../utils/logger.js';
 
 const sanitizeName = (name) => (name || 'file').replace(/[^\w.\-]/g, '_').slice(0, 100);
 
 /**
- * Persist a file buffer. Returns a public URL.
+ * Persist a file buffer. Returns a public URL. Images/PDFs are then compressed
+ * in the background and overwritten in place (see file-compression.service).
  * - S3 enabled  → absolute S3 URL
  * - otherwise   → relative `/uploads/<prefix>/<file>` (served by Express static)
  *
@@ -34,14 +36,27 @@ export const storeBuffer = async ({ buffer, originalName, mimetype, prefix = 'fo
     if (s3Service.isEnabled()) {
         const key = `${prefix}/${filename}`;
         const { url } = await s3Service.uploadObject({ buffer, key, contentType: mimetype });
+        scheduleCompression({
+            buffer,
+            mimetype,
+            label: key,
+            write: (compressed) => s3Service.uploadObject({ buffer: compressed, key, contentType: mimetype }),
+        });
         return { url, name: originalName, size: buffer.length, mime: mimetype };
     }
 
     // Local disk fallback
     const dir = path.join(config.upload.dir, prefix);
     await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(path.join(dir, filename), buffer);
+    const filePath = path.join(dir, filename);
+    await fs.writeFile(filePath, buffer);
     logger.info(`Stored upload on disk: ${prefix}/${filename}`);
+    scheduleCompression({
+        buffer,
+        mimetype,
+        label: `${prefix}/${filename}`,
+        write: (compressed) => fs.writeFile(filePath, compressed),
+    });
 
     return { url: `/uploads/${prefix}/${filename}`, name: originalName, size: buffer.length, mime: mimetype };
 };

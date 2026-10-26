@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { FORM_MAX_UPLOAD_MB } from "@/lib/form-upload"
 import {
     Select,
     SelectContent,
@@ -145,7 +146,7 @@ export function QuestionEditor({
 
             {local.type === "FILE_UPLOAD" && (
                 <FileConfigEditor
-                    config={local.config || { maxFiles: 1, maxSizeMb: 5 }}
+                    config={local.config || { maxFiles: 1, maxSizeMb: FORM_MAX_UPLOAD_MB }}
                     onSave={(config) => { setLocal({ ...local, config }); patch({ config }) }}
                 />
             )}
@@ -337,7 +338,7 @@ function FileConfigEditor({ config, onSave }: { config: NonNullable<FormQuestion
             </div>
             <div className="space-y-1">
                 <Label className="text-xs">Max size (MB)</Label>
-                <Input type="number" min={1} value={c.maxSizeMb ?? 5} onChange={(e) => setC({ ...c, maxSizeMb: Number(e.target.value) })} onBlur={() => onSave(c)} />
+                <Input type="number" min={1} max={FORM_MAX_UPLOAD_MB} value={c.maxSizeMb ?? FORM_MAX_UPLOAD_MB} onChange={(e) => setC({ ...c, maxSizeMb: Math.min(Number(e.target.value), FORM_MAX_UPLOAD_MB) })} onBlur={() => onSave(c)} />
             </div>
         </div>
     )

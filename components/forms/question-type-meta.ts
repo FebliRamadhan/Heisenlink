@@ -1,4 +1,5 @@
 import type { QuestionType } from "@/types"
+import { FORM_MAX_UPLOAD_MB } from "@/lib/form-upload"
 import {
     Type,
     AlignLeft,
@@ -41,6 +42,6 @@ export const defaultOptionsFor = (t: QuestionType) =>
 
 export const defaultConfigFor = (t: QuestionType) => {
     if (t === "LINEAR_SCALE") return { min: 1, max: 5 }
-    if (t === "FILE_UPLOAD") return { maxFiles: 1, maxSizeMb: 5 }
+    if (t === "FILE_UPLOAD") return { maxFiles: 1, maxSizeMb: FORM_MAX_UPLOAD_MB }
     return undefined
 }
