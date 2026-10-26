@@ -484,9 +484,9 @@ export const getLinkAnalytics = async (linkId, dateRange = {}) => {
       DATE(clicked_at) as date,
       COUNT(*) as clicks
     FROM click_events
-    WHERE short_link_id = ${linkId}::uuid
-      ${from ? prisma.sql`AND clicked_at >= ${new Date(from)}` : prisma.sql``}
-      ${to ? prisma.sql`AND clicked_at <= ${new Date(to)}` : prisma.sql``}
+    WHERE short_link_id = ${linkId}
+      ${from ? Prisma.sql`AND clicked_at >= ${new Date(from)}` : Prisma.empty}
+      ${to ? Prisma.sql`AND clicked_at <= ${new Date(to)}` : Prisma.empty}
     GROUP BY DATE(clicked_at)
     ORDER BY date DESC
     LIMIT 30
@@ -511,7 +511,8 @@ export const getLinkAnalytics = async (linkId, dateRange = {}) => {
             referrer: r.referrer,
             count: r._count,
         })),
-        clicksByDay,
+        // COUNT(*) comes back as BigInt, which res.json cannot serialize
+        clicksByDay: clicksByDay.map(d => ({ date: d.date, clicks: Number(d.clicks) })),
     };
 };
 
