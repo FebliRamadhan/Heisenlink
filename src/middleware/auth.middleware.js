@@ -2,7 +2,7 @@
 // Heisenlink - Auth Middleware
 // ===========================================
 
-import { verifyToken } from '../services/auth.service.js';
+import { verifyToken, isTokenRevoked } from '../services/auth.service.js';
 import { errors } from './error.middleware.js';
 import prisma from '../config/database.js';
 import { isEmailAllowed } from '../utils/helpers.js';
@@ -26,8 +26,12 @@ export const authenticate = async (req, res, next) => {
             throw errors.unauthorized('No token provided');
         }
 
-        // Verify token
+        // Verify token. Refresh tokens are signed with the same secret, so reject
+        // them explicitly; they must only ever reach /auth/refresh.
         const decoded = verifyToken(token);
+        if (decoded.type === 'refresh' || await isTokenRevoked(decoded)) {
+            throw errors.unauthorized('Invalid or expired token');
+        }
 
         // Tokens outlive account changes, so re-check the account on every request:
         // deleted/deactivated/disallowed users are cut off and role comes from the DB.
@@ -62,7 +66,7 @@ export const optionalAuth = async (req, res, next) => {
             if (token) {
                 try {
                     const decoded = verifyToken(token);
-                    req.user = decoded;
+                    if (decoded.type !== 'refresh') req.user = decoded;
                 } catch {
                     // Token invalid, continue without user
                 }

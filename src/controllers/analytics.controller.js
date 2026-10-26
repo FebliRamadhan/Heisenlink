@@ -2,6 +2,7 @@
 // Heisenlink - Analytics Controller
 // ===========================================
 
+import * as linksService from '../services/links.service.js';
 import * as analyticsService from '../services/analytics.service.js';
 import { formatResponse } from '../utils/helpers.js';
 
@@ -29,6 +30,9 @@ export const getLinkAnalytics = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { from, to } = req.query;
+
+        // Ownership check (ADMIN may view any link)
+        await linksService.getLinkById(id, req.user.role === 'ADMIN' ? null : req.user.sub);
 
         const analytics = await analyticsService.getLinkAnalytics(id, { from, to });
 

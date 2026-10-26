@@ -17,6 +17,11 @@ import routes from './routes/index.js';
 
 const app = express();
 
+// Behind nginx (and Next SSR) on the docker network: take the client IP from
+// X-Forwarded-For so rate limits and audit logs are per real client.
+app.set('trust proxy', 'loopback, linklocal, uniquelocal');
+app.disable('x-powered-by');
+
 // ===========================================
 // Security Middleware
 // ===========================================

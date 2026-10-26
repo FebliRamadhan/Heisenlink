@@ -3,6 +3,7 @@ const apiUrl = process.env.INTERNAL_API_URL || 'http://localhost:4000';
 
 const nextConfig = {
     output: 'standalone',
+    poweredByHeader: false,
     reactStrictMode: true,
     images: {
         remotePatterns: [
@@ -34,7 +35,8 @@ const nextConfig = {
                     key: 'Content-Security-Policy',
                     value: [
                         "default-src 'self'",
-                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+                        // 'unsafe-eval' only for dev (React refresh); production bundles don't eval
+                        `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'production' ? '' : " 'unsafe-eval'"}`,
                         "style-src 'self' 'unsafe-inline'",
                         "img-src 'self' data: https: blob:",
                         "font-src 'self' data:",

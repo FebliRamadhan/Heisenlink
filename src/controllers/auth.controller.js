@@ -31,9 +31,18 @@ export const login = async (req, res, next) => {
  */
 export const logout = async (req, res, next) => {
     try {
-        // In a stateless JWT setup, just return success
-        // Client should remove the token
-        // For added security, you could blacklist the token in Redis
+        await authService.revokeToken(req.user);
+        const { refreshToken } = req.body || {};
+        if (typeof refreshToken === 'string') {
+            try {
+                const payload = authService.verifyToken(refreshToken);
+                if (payload.type === 'refresh' && payload.sub === req.user.sub) {
+                    await authService.revokeToken(payload);
+                }
+            } catch {
+                // already invalid/expired - nothing to revoke
+            }
+        }
 
         res.json(formatResponse({ message: 'Logged out successfully' }));
     } catch (error) {

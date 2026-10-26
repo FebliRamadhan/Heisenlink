@@ -2,6 +2,8 @@
 // Heisenlink - Auth Service
 // ===========================================
 
+import { randomUUID } from 'crypto';
+import getRedisClient from '../config/redis.js';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/database.js';
 import config from '../config/index.js';
@@ -21,16 +23,18 @@ export const generateTokens = (user) => {
         sub: user.id,
         username: user.username,
         role: user.role,
+        type: 'access',
     };
 
     const accessToken = jwt.sign(payload, config.jwt.secret, {
         expiresIn: config.jwt.expiresIn,
+        jwtid: randomUUID(),
     });
 
     const refreshToken = jwt.sign(
         { sub: user.id, type: 'refresh' },
         config.jwt.secret,
-        { expiresIn: config.jwt.refreshExpiresIn }
+        { expiresIn: config.jwt.refreshExpiresIn, jwtid: randomUUID() }
     );
 
     return { accessToken, refreshToken };
@@ -43,9 +47,36 @@ export const generateTokens = (user) => {
  */
 export const verifyToken = (token) => {
     try {
-        return jwt.verify(token, config.jwt.secret);
+        return jwt.verify(token, config.jwt.secret, { algorithms: ['HS256'] });
     } catch (error) {
         throw errors.unauthorized('Invalid or expired token');
+    }
+};
+
+const revokedKey = (jti) => `revoked:jti:${jti}`;
+
+/**
+ * Revoke a token until it would have expired anyway (logout).
+ * @param {object} payload - Decoded JWT (needs jti + exp)
+ */
+export const revokeToken = async (payload) => {
+    if (!payload?.jti || !payload?.exp) return;
+    const ttl = payload.exp - Math.floor(Date.now() / 1000);
+    if (ttl > 0) await getRedisClient().set(revokedKey(payload.jti), '1', 'EX', ttl);
+};
+
+/**
+ * @param {object} payload - Decoded JWT
+ * @returns {Promise<boolean>}
+ */
+export const isTokenRevoked = async (payload) => {
+    if (!payload?.jti) return false;
+    try {
+        return (await getRedisClient().exists(revokedKey(payload.jti))) === 1;
+    } catch (error) {
+        // Fail open like the rate limiter: a Redis outage must not lock everyone out
+        logger.warn(`Token revocation check skipped (Redis error): ${error.message}`);
+        return false;
     }
 };
 
@@ -187,9 +218,9 @@ export const login = async (username, password, context = {}) => {
  */
 export const refreshAccessToken = async (refreshToken) => {
     try {
-        const payload = jwt.verify(refreshToken, config.jwt.secret);
+        const payload = jwt.verify(refreshToken, config.jwt.secret, { algorithms: ['HS256'] });
 
-        if (payload.type !== 'refresh') {
+        if (payload.type !== 'refresh' || await isTokenRevoked(payload)) {
             throw errors.unauthorized('Invalid refresh token');
         }
 

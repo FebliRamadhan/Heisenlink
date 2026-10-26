@@ -12,6 +12,8 @@ import {
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
+import api from "@/lib/api"
+import { useAuthStore } from "@/stores/auth-store"
 
 export function UserNav() {
     const { user, logout } = useAuth()
@@ -19,6 +21,12 @@ export function UserNav() {
     const queryClient = useQueryClient()
 
     const handleLogout = () => {
+        // Revoke both tokens server-side (best-effort; don't block the UI on it)
+        // Headers are captured now: the interceptor would run after logout() cleared the store
+        const { accessToken, refreshToken } = useAuthStore.getState()
+        if (accessToken) {
+            api.post("/auth/logout", { refreshToken }, { headers: { Authorization: `Bearer ${accessToken}` } }).catch(() => {})
+        }
         // Clear all React Query cache (prevents stale data from previous user)
         queryClient.clear()
         // Clear auth state

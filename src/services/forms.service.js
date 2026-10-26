@@ -386,9 +386,10 @@ export const reorderQuestions = async (formId, userId, role, questionIds) => {
     const { form } = await assertFormAccess(formId, userId, role, 'EDITOR');
 
     await prisma.$transaction(
+        // updateMany scoped to this form: ids from other forms are ignored
         questionIds.map((id, index) =>
-            prisma.formQuestion.update({
-                where: { id },
+            prisma.formQuestion.updateMany({
+                where: { id, formId },
                 data: { position: index },
             })
         )

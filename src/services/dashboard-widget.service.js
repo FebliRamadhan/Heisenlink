@@ -130,9 +130,10 @@ export const deleteWidget = async (dashboardId, widgetId, userId, role) => {
 export const reorderWidgets = async (dashboardId, userId, role, widgetIds) => {
   const dashboard = await assertDashboardOwner(dashboardId, userId, role);
   await prisma.$transaction(
+    // updateMany scoped to this dashboard: ids from other dashboards are ignored
     widgetIds.map((id, index) =>
-      prisma.dashboardWidget.update({
-        where: { id },
+      prisma.dashboardWidget.updateMany({
+        where: { id, dashboardId },
         data: { position: index },
       }),
     ),

@@ -17,11 +17,6 @@ api.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
-        // DEBUG: Check if token is attached
-        console.log(`[API] Request ${config.method?.toUpperCase()} ${config.url}`, {
-            hasToken: !!token,
-            headers: config.headers
-        });
         return config;
     },
     (error) => Promise.reject(error)

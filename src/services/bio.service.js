@@ -364,9 +364,10 @@ export const reorderBioLinks = async (userId, linkIds) => {
 
     // Update positions in transaction
     await prisma.$transaction(
+        // updateMany scoped to this bio page: ids from other pages are ignored
         linkIds.map((id, index) =>
-            prisma.bioLink.update({
-                where: { id },
+            prisma.bioLink.updateMany({
+                where: { id, bioPageId: bioPage.id },
                 data: { position: index },
             })
         )
