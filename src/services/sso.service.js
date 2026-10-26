@@ -7,6 +7,7 @@ import config from '../config/index.js';
 import { generateTokens } from './auth.service.js';
 import { errors } from '../middleware/error.middleware.js';
 import logger from '../utils/logger.js';
+import { isEmailAllowed } from '../utils/helpers.js';
 
 /**
  * Exchange authorization code for tokens with SADA SSO
@@ -152,10 +153,16 @@ export const handleCallback = async (code, codeVerifier, context = {}) => {
     // 2. Fetch user info from SSO
     const ssoUser = await fetchUserInfo(ssoTokens.access_token);
 
-    // 3. Find or create local user
+    // 3. Reject emails outside the allowlist before any account is created/linked
+    if (!isEmailAllowed(ssoUser.email)) {
+        logger.warn(`SSO login rejected (email domain not allowed): ${ssoUser.email || ssoUser.sub}`);
+        throw errors.forbidden('Akun ini tidak memiliki akses ke aplikasi');
+    }
+
+    // 4. Find or create local user
     const user = await upsertUserFromSSO(ssoUser);
 
-    // 4. Check if user is active
+    // 5. Check if user is active
     if (!user.isActive) {
         throw errors.forbidden('Your account has been deactivated');
     }

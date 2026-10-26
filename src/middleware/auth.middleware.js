@@ -5,6 +5,7 @@
 import { verifyToken } from '../services/auth.service.js';
 import { errors } from './error.middleware.js';
 import prisma from '../config/database.js';
+import { isEmailAllowed } from '../utils/helpers.js';
 
 /**
  * Authenticate JWT token
@@ -28,8 +29,18 @@ export const authenticate = async (req, res, next) => {
         // Verify token
         const decoded = verifyToken(token);
 
+        // Tokens outlive account changes, so re-check the account on every request:
+        // deleted/deactivated/disallowed users are cut off and role comes from the DB.
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.sub },
+            select: { isActive: true, role: true, email: true },
+        });
+        if (!user || !user.isActive || !isEmailAllowed(user.email)) {
+            throw errors.unauthorized('Account is no longer active');
+        }
+
         // Attach user info to request
-        req.user = decoded;
+        req.user = { ...decoded, role: user.role };
 
         next();
     } catch (error) {

@@ -41,6 +41,15 @@ const config = {
         refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
     },
 
+    // Restrict who may sign in (SSO, LDAP, local). Comma-separated, e.g. "menpan.go.id".
+    // Empty = allow any email.
+    auth: {
+        allowedEmailDomains: (process.env.ALLOWED_EMAIL_DOMAINS || '')
+            .split(',')
+            .map((d) => d.trim().toLowerCase().replace(/^@/, ''))
+            .filter(Boolean),
+    },
+
     // SSO (SADA SSO - OAuth2 PKCE)
     sso: {
         enabled: process.env.SSO_ENABLED === 'true',

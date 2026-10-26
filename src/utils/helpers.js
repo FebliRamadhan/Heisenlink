@@ -2,6 +2,8 @@
 // Heisenlink - Helper Utilities
 // ===========================================
 
+import config from '../config/index.js';
+
 /**
  * Format API response
  * @param {any} data - Response data
@@ -176,7 +178,20 @@ export const pick = (obj, keys) => {
     return result;
 };
 
+/**
+ * Check an email against config.auth.allowedEmailDomains (exact domain match).
+ * @param {string} email
+ * @returns {boolean} - true when no allowlist is configured
+ */
+export const isEmailAllowed = (email) => {
+    const allowed = config.auth.allowedEmailDomains;
+    if (!allowed.length) return true;
+    const domain = String(email || '').toLowerCase().split('@')[1];
+    return Boolean(domain) && allowed.includes(domain);
+};
+
 export default {
+    isEmailAllowed,
     formatResponse,
     formatError,
     parsePagination,

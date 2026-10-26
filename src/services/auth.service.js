@@ -9,6 +9,7 @@ import { authenticateLdap } from './ldap.service.js';
 import { hashPassword, comparePassword } from '../utils/password.js';
 import { errors } from '../middleware/error.middleware.js';
 import logger from '../utils/logger.js';
+import { isEmailAllowed } from '../utils/helpers.js';
 
 /**
  * Generate JWT tokens
@@ -69,6 +70,10 @@ export const login = async (username, password, context = {}) => {
 
             // Find existing user by username OR email (avoid unique constraint errors)
             const ldapEmail = ldapUser.email || `${username}@ldap.local`;
+            if (!isEmailAllowed(ldapEmail)) {
+                logger.warn(`LDAP login rejected (email domain not allowed): ${ldapEmail}`);
+                throw errors.forbidden('Akun ini tidak memiliki akses ke aplikasi');
+            }
             user = await prisma.user.findFirst({
                 where: {
                     OR: [
@@ -107,6 +112,7 @@ export const login = async (username, password, context = {}) => {
             }
         }
     } catch (ldapErr) {
+        if (ldapErr.statusCode === 403) throw ldapErr;
         logger.error(`LDAP login failed for ${username}:`, ldapErr);
         logger.error(`Error details: ${JSON.stringify(ldapErr, Object.getOwnPropertyNames(ldapErr))}`);
         // Fall through to local authentication
@@ -133,6 +139,10 @@ export const login = async (username, password, context = {}) => {
 
     // Check if user is active
     if (!user.isActive) throw errors.forbidden('Your account has been deactivated');
+    if (!isEmailAllowed(user.email)) {
+        logger.warn(`Login rejected (email domain not allowed): ${user.email}`);
+        throw errors.forbidden('Akun ini tidak memiliki akses ke aplikasi');
+    }
 
     // Create Audit Log
     try {
