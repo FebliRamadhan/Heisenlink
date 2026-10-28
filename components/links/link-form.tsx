@@ -266,7 +266,7 @@ export function LinkForm({ initialData }: LinkFormProps) {
                 />
 
                 {/* Scheduling Section */}
-                <div className="space-y-4 rounded-lg border p-4">
+                <div className="space-y-4 border-t pt-6">
                     <h3 className="font-medium">Link Scheduling</h3>
                     <div className="grid gap-4 md:grid-cols-2">
                         <FormField
@@ -309,7 +309,7 @@ export function LinkForm({ initialData }: LinkFormProps) {
                     control={form.control}
                     name="showConfirmation"
                     render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <FormItem className="flex flex-row items-center justify-between gap-4 border-t pt-6">
                             <div className="space-y-0.5">
                                 <FormLabel className="text-base">Confirmation Page</FormLabel>
                                 <FormDescription>
@@ -330,7 +330,7 @@ export function LinkForm({ initialData }: LinkFormProps) {
                     control={form.control}
                     name="isActive"
                     render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <FormItem className="flex flex-row items-center justify-between gap-4 border-t pt-6">
                             <div className="space-y-0.5">
                                 <FormLabel className="text-base">Active Status</FormLabel>
                                 <FormDescription>
@@ -347,7 +347,7 @@ export function LinkForm({ initialData }: LinkFormProps) {
                     )}
                 />
                 <Button type="submit" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin motion-reduce:animate-none" />}
                     {initialData ? "Save Changes" : "Create Link"}
                 </Button>
             </form>

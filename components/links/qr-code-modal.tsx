@@ -134,7 +134,7 @@ export function QRCodeModal({
                     {/* QR Code Preview */}
                     <div className="relative flex items-center justify-center w-full aspect-square max-w-[300px] rounded-lg bg-white p-4 border">
                         {loading ? (
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none text-muted-foreground" />
                         ) : qrDataUrl ? (
                             <img
                                 src={qrDataUrl}

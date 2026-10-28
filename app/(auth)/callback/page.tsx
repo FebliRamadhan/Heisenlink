@@ -83,7 +83,7 @@ export default function SSOCallbackPage() {
     return (
         <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none text-primary mb-4" />
                 <p className="text-sm text-muted-foreground">
                     Authenticating via SSO…
                 </p>

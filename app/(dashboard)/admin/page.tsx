@@ -21,15 +21,15 @@ export default function AdminDashboardPage() {
     if (isLoading) {
         return (
             <div className="flex h-96 items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin" />
+                <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none" />
             </div>
         )
     }
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Admin Console</h2>
+        <div className="mx-auto w-full max-w-6xl space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <h1 className="text-2xl font-semibold tracking-tight">Admin Console</h1>
             </div>
 
             {/* Admin-specific stat cards */}

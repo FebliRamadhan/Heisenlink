@@ -88,10 +88,16 @@ export function FormBuilder({ form }: { form: Form }) {
         (t) => QUESTION_TYPE_META[t].group === "display"
     )
 
+    // Answerable questions are numbered in order; sections and display items are not.
+    const numbers = new Map<string, number>()
+    questions.forEach((q) => {
+        if (QUESTION_TYPE_META[q.type]?.group === "input") numbers.set(q.id, numbers.size + 1)
+    })
+
     const AddMenu = (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button className="w-full"><Plus className="mr-2 h-4 w-4" /> Add item</Button>
+                <Button variant="outline" className="h-11 w-full border-dashed text-muted-foreground hover:text-foreground"><Plus className="mr-2 h-4 w-4" /> Add item</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
                 <DropdownMenuLabel>Question</DropdownMenuLabel>
@@ -118,34 +124,36 @@ export function FormBuilder({ form }: { form: Form }) {
     )
 
     return (
-        <div className="max-w-3xl space-y-4">
-            {AddMenu}
-
+        <div className="mx-auto max-w-3xl space-y-3">
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={questions.map((q) => q.id)} strategy={verticalListSortingStrategy}>
                     <ul className="space-y-3 list-none p-0 m-0">
                         {questions.map((q) => (
-                            <SortableQuestion key={q.id} question={q} formId={form.id} onChange={invalidate} />
+                            <SortableQuestion key={q.id} question={q} number={numbers.get(q.id)} formId={form.id} onChange={invalidate} />
                         ))}
                     </ul>
                 </SortableContext>
             </DndContext>
 
             {!questions.length && (
-                <div className="text-center py-10 text-muted-foreground border-dashed border-2 rounded-lg">
+                <p className="py-10 text-center text-sm text-muted-foreground">
                     No questions yet. Click &ldquo;Add item&rdquo; to build your form.
-                </div>
+                </p>
             )}
+
+            {AddMenu}
         </div>
     )
 }
 
 function SortableQuestion({
     question,
+    number,
     formId,
     onChange,
 }: {
     question: FormQuestion
+    number?: number
     formId: string
     onChange: () => void
 }) {
@@ -153,8 +161,12 @@ function SortableQuestion({
     const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.6 : 1 }
 
     return (
-        <li ref={setNodeRef} style={style} className="bg-card border rounded-lg shadow-sm">
-            <div className="flex items-start gap-2 p-3">
+        <li
+            ref={setNodeRef}
+            style={style}
+            className={question.type === "SECTION" ? "mt-6 rounded-lg border bg-muted/50 first:mt-0" : "rounded-lg border bg-card"}
+        >
+            <div className="flex items-start gap-2 p-3 sm:p-4">
                 <button
                     type="button"
                     {...attributes}
@@ -164,6 +176,9 @@ function SortableQuestion({
                 >
                     <GripVertical className="h-5 w-5" aria-hidden="true" />
                 </button>
+                <span className="mt-2.5 w-6 shrink-0 text-right text-sm tabular-nums text-muted-foreground" aria-hidden="true">
+                    {number ? `${number}.` : ""}
+                </span>
                 <div className="flex-1 min-w-0">
                     <QuestionEditor question={question} formId={formId} onChange={onChange} />
                 </div>

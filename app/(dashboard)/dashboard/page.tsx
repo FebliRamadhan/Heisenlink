@@ -19,9 +19,9 @@ export default function DashboardPage() {
     })
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <div className="mx-auto w-full max-w-6xl space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
                 <div className="flex items-center space-x-2">
                     <Link href="/dashboard/links/new">
                         <Button>
@@ -34,7 +34,7 @@ export default function DashboardPage() {
             {isLoading ? (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     {[...Array(4)].map((_, i) => (
-                        <Card key={i} className="animate-pulse h-32" />
+                        <Card key={i} className="animate-pulse motion-reduce:animate-none h-32" />
                     ))}
                 </div>
             ) : (

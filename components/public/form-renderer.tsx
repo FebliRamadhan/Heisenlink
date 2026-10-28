@@ -256,6 +256,11 @@ export function FormRenderer({ form }: { form: PublicForm }) {
         <>
             {/* Masthead */}
             <header style={{ marginBottom: 28 }}>
+                <div className="f-org">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/logo-panrb.png" alt="" />
+                    <span>Kementerian PANRB</span>
+                </div>
                 <h1 className="f-h1">{form.title}</h1>
                 {form.description && <p className="f-lede">{form.description}</p>}
             </header>
@@ -313,7 +318,7 @@ export function FormRenderer({ form }: { form: PublicForm }) {
                                         <FormField key={q.id} question={q} value={answers[q.id]} onChange={(v) => setAnswer(q, v)} error={errors[q.id]}>
                                             {q.type === "FILE_UPLOAD" && uploading[q.id] && (
                                                 <p style={{ marginTop: 8, fontSize: 12.5, color: "var(--f-ink-3)", display: "flex", alignItems: "center", gap: 6 }}>
-                                                    <Loader2 className="h-3 w-3 animate-spin" /> Mengunggah…
+                                                    <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" /> Mengunggah…
                                                 </p>
                                             )}
                                             {q.type === "FILE_UPLOAD" && hasFiles(q) && (
@@ -347,7 +352,7 @@ export function FormRenderer({ form }: { form: PublicForm }) {
                                 {onReview ? (
                                     <button type="button" className="f-btn f-btn-primary" onClick={onSubmit} disabled={submitting}>
                                         {submitting ? (
-                                            <><Loader2 className="h-4 w-4 animate-spin" /> {attempt > 1 ? `Mencoba lagi (${attempt})…` : "Mengirim…"}</>
+                                            <><Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /> {attempt > 1 ? `Mencoba lagi (${attempt})…` : "Mengirim…"}</>
                                         ) : (<>Kirim Formulir <ArrowIcon /></>)}
                                     </button>
                                 ) : (

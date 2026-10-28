@@ -49,10 +49,10 @@ export function LoginLogsTable({
 }: LoginLogsTableProps) {
     return (
         <div className="space-y-4">
-            <div className="rounded-md border overflow-x-auto">
+            <div className="overflow-x-auto rounded-lg border bg-card">
                 <Table>
                     <TableHeader>
-                        <TableRow>
+                        <TableRow className="bg-muted/40 hover:bg-muted/40">
                             <TableHead>Time</TableHead>
                             <TableHead>User</TableHead>
                             <TableHead>Action</TableHead>

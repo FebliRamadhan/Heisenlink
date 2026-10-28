@@ -33,8 +33,8 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
+        <div className="mx-auto w-full max-w-6xl space-y-6">
+            <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
 
             <div className="grid gap-4 max-w-2xl">
                 <Card>

@@ -48,7 +48,7 @@ export default function FormDashboardsPage({
   });
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
@@ -57,7 +57,7 @@ export default function FormDashboardsPage({
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h2 className="text-3xl font-bold tracking-tight">Dashboards</h2>
+          <h1 className="text-2xl font-semibold tracking-tight">Dashboards</h1>
         </div>
         <Button onClick={() => create.mutate()} disabled={create.isPending}>
           <Plus className="mr-2 h-4 w-4" />

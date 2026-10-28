@@ -97,7 +97,7 @@ export function QuestionEditor({
                     onChange={(e) => setLocal({ ...local, title: e.target.value })}
                     onBlur={() => local.title !== question.title && patch({ title: local.title })}
                     placeholder={titlePlaceholder}
-                    className="flex-1"
+                    className={`flex-1 border-transparent bg-muted/40 font-medium shadow-none hover:border-input focus-visible:bg-background ${local.type === "SECTION" ? "text-base" : ""}`}
                     aria-label="Question title"
                 />
                 <Select value={local.type} onValueChange={(v) => changeType(v as QuestionType)}>
@@ -124,7 +124,7 @@ export function QuestionEditor({
                     onChange={(e) => setLocal({ ...local, description: e.target.value })}
                     onBlur={() => (local.description || "") !== (question.description || "") && patch({ description: local.description || null })}
                     placeholder={local.type === "SECTION" ? "Intro / deskripsi bagian (opsional)" : "Help text (optional)"}
-                    className="text-sm"
+                    className="h-9 border-transparent text-sm text-muted-foreground shadow-none hover:border-input focus-visible:text-foreground"
                     aria-label={local.type === "SECTION" ? "Section intro" : "Help text"}
                 />
             )}
@@ -132,6 +132,7 @@ export function QuestionEditor({
             {/* Type-specific editors */}
             {isChoiceType(local.type) && (
                 <OptionsEditor
+                    type={local.type}
                     options={local.options || []}
                     onSave={(options) => { setLocal({ ...local, options }); patch({ options }) }}
                 />
@@ -198,7 +199,7 @@ export function QuestionEditor({
     )
 }
 
-function OptionsEditor({ options, onSave }: { options: QuestionOption[]; onSave: (o: QuestionOption[]) => void }) {
+function OptionsEditor({ type, options, onSave }: { type: QuestionType; options: QuestionOption[]; onSave: (o: QuestionOption[]) => void }) {
     const [items, setItems] = useState<QuestionOption[]>(options)
     useEffect(() => setItems(options), [options])
 
@@ -222,7 +223,11 @@ function OptionsEditor({ options, onSave }: { options: QuestionOption[]; onSave:
         <div className="space-y-2">
             {items.map((opt, idx) => (
                 <div key={opt.id} className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-muted-foreground/40" aria-hidden="true" />
+                    {type === "DROPDOWN" ? (
+                        <span className="w-4 text-right text-sm tabular-nums text-muted-foreground" aria-hidden="true">{idx + 1}.</span>
+                    ) : (
+                        <span className={`h-4 w-4 shrink-0 border-2 border-muted-foreground/50 ${type === "CHECKBOXES" ? "rounded-[4px]" : "rounded-full"}`} aria-hidden="true" />
+                    )}
                     <Input
                         value={opt.label}
                         onChange={(e) => update(idx, e.target.value)}
@@ -235,7 +240,7 @@ function OptionsEditor({ options, onSave }: { options: QuestionOption[]; onSave:
                     </Button>
                 </div>
             ))}
-            <Button variant="outline" size="sm" onClick={add}><Plus className="mr-2 h-4 w-4" /> Add option</Button>
+            <Button variant="ghost" size="sm" onClick={add} className="ml-4 text-muted-foreground hover:text-foreground"><Plus className="mr-2 h-4 w-4" /> Add option</Button>
         </div>
     )
 }

@@ -25,8 +25,8 @@ export default function AdminLinksPage() {
     })
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <h2 className="text-3xl font-bold tracking-tight">System Links</h2>
+        <div className="mx-auto w-full max-w-6xl space-y-6">
+            <h1 className="text-2xl font-semibold tracking-tight">System Links</h1>
             {isLoading ? <div>Loading...</div> : <AdminLinksTable links={links || []} />}
         </div>
     )

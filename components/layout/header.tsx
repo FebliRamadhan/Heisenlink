@@ -12,8 +12,8 @@ export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
     return (
-        <header className="border-b bg-background/95 backdrop-blur z-50 sticky top-0">
-            <div className="flex h-16 items-center px-4 sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-50 border-b bg-background">
+            <div className="flex h-14 items-center px-4 sm:px-6">
                 <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                     <SheetTrigger asChild>
                         <Button variant="ghost" size="icon" className="md:hidden mr-2" aria-label="Open menu">
@@ -24,13 +24,17 @@ export default function Header() {
                         <Sidebar mobile onNavigate={() => setMobileMenuOpen(false)} />
                     </SheetContent>
                 </Sheet>
-                <div className="flex items-center gap-4">
-                    <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-                        <img src="/logo-panrb.png" alt="Logo Kementerian PANRB" className="h-10 w-auto" />
-                        <span className="text-lg hidden sm:inline">Heisenlink</span>
-                    </Link>
-                </div>
-                <div className="ml-auto flex items-center space-x-4">
+                <Link
+                    href="/dashboard"
+                    className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                    <img src="/logo-panrb.png" alt="Logo Kementerian PANRB" className="h-8 w-auto" />
+                    <span className="hidden sm:flex items-baseline gap-2">
+                        <span className="font-semibold">Heisenlink</span>
+                        <span className="text-sm text-muted-foreground">Kementerian PANRB</span>
+                    </span>
+                </Link>
+                <div className="ml-auto flex items-center gap-4">
                     <UserNav />
                 </div>
             </div>

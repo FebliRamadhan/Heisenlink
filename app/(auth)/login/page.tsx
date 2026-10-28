@@ -147,7 +147,7 @@ export default function LoginPage() {
                             disabled={isSsoLoading}
                         >
                             {isSsoLoading ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin motion-reduce:animate-none" />
                             ) : (
                                 <LogIn className="mr-2 h-4 w-4" />
                             )}
@@ -204,7 +204,7 @@ export default function LoginPage() {
                             )}
                         </div>
                         <Button className="w-full" type="submit" disabled={isLoading} variant={ssoConfig?.enabled ? "outline" : "default"}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin motion-reduce:animate-none" />}
                             Sign In
                         </Button>
                     </form>

@@ -5,7 +5,7 @@ import { useState } from "react"
 import Link from "next/link"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger, tabUnderline } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
     DropdownMenu,
@@ -62,14 +62,14 @@ export default function ResponsesPage({ params }: { params: { id: string } }) {
     }
 
     return (
-        <div className="flex-1 space-y-6 p-8 pt-6">
+        <div className="mx-auto w-full max-w-6xl space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <Link href={`/dashboard/forms/${id}`} aria-label="Back to editor">
-                        <Button variant="ghost" size="icon"><ArrowLeft className="h-4 w-4" /></Button>
-                    </Link>
+                    <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/dashboard/forms/${id}`} aria-label="Back to editor"><ArrowLeft className="h-4 w-4" /></Link>
+                    </Button>
                     <div>
-                        <h2 className="text-2xl font-bold tracking-tight">{form?.title || "Responses"}</h2>
+                        <h1 className="text-2xl font-semibold tracking-tight">{form?.title || "Responses"}</h1>
                         <p className="text-sm text-muted-foreground">{summary.data?.responseCount ?? form?.responseCount ?? 0} response(s)</p>
                     </div>
                 </div>
@@ -85,9 +85,9 @@ export default function ResponsesPage({ params }: { params: { id: string } }) {
             </div>
 
             <Tabs defaultValue="summary">
-                <TabsList>
-                    <TabsTrigger value="summary">Summary</TabsTrigger>
-                    <TabsTrigger value="individual">Individual</TabsTrigger>
+                <TabsList className="h-auto w-full justify-start gap-1 rounded-none border-b bg-transparent p-0">
+                    <TabsTrigger value="summary" className={tabUnderline}>Summary</TabsTrigger>
+                    <TabsTrigger value="individual" className={tabUnderline}>Individual</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="summary" className="mt-6">

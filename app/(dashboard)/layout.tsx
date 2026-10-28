@@ -24,7 +24,7 @@ export default function DashboardLayout({
     if (isLoading) {
         return (
             <div className="flex h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin" />
+                <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none" />
             </div>
         )
     }
@@ -36,7 +36,7 @@ export default function DashboardLayout({
             <Header />
             <div className="flex flex-1">
                 <Sidebar />
-                <main className="flex-1 p-4 md:p-8 overflow-y-auto h-[calc(100vh-4rem)] supports-[height:100dvh]:h-[calc(100dvh-4rem)]">
+                <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8 h-[calc(100vh-3.5rem)] supports-[height:100dvh]:h-[calc(100dvh-3.5rem)]">
                     {children}
                 </main>
             </div>

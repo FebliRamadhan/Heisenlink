@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import { FormField } from "@/components/public/form-field"
 import type { Form, FormQuestion } from "@/types"
 
@@ -22,27 +21,16 @@ function paginate(questions: FormQuestion[]): FormQuestion[][] {
     return pages
 }
 
-// Load the form theme's Google fonts on the dashboard (the /f layout that
-// normally injects them isn't mounted here). Injected once, idempotently.
-const FONT_HREF =
-    "https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&display=swap"
 
 /**
  * Read-only preview of the form as a respondent sees it, in the public form
- * design language (warm paper, Indigo accent, serif card heads, choice-cards).
+ * design language (choice-cards, one card per section).
  * One themed card per section. Inputs are inert.
  */
 export function FormPreview({ form }: { form: Form }) {
     const questions = form.questions || []
     const pages = paginate(questions)
 
-    useEffect(() => {
-        if (document.querySelector(`link[href="${FONT_HREF}"]`)) return
-        const link = document.createElement("link")
-        link.rel = "stylesheet"
-        link.href = FONT_HREF
-        document.head.appendChild(link)
-    }, [])
 
     return (
         <div className="form-theme form-app-bg" style={{ borderRadius: 20, padding: "26px 22px 36px" }}>

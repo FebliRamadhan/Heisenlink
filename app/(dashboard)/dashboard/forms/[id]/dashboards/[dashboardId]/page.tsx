@@ -119,7 +119,7 @@ export default function DashboardBuilderPage({
 
   if (dashboardQuery.isLoading || !dashboard) {
     return (
-      <div className="space-y-4 p-8">
+      <div className="mx-auto w-full max-w-6xl space-y-6">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-64 w-full" />
       </div>

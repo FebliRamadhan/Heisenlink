@@ -84,17 +84,17 @@ export default function BioPage() {
     }
 
     return (
-        <div className="flex-1 p-8 pt-6 h-[calc(100vh-4rem)] supports-[height:100dvh]:h-[calc(100dvh-4rem)] overflow-y-auto">
-            <div className="flex h-full gap-6">
-                <div className="flex-1 overflow-y-auto pr-2 pb-20">
+        <div className="mx-auto w-full max-w-6xl">
+            <div className="flex gap-8">
+                <div className="min-w-0 flex-1 pb-20">
                     <BioForm bioPage={bioPage} systemInfo={systemInfo} />
                 </div>
-                <div className="w-[400px] hidden xl:block border-l pl-6 pt-6">
-                    <div className="sticky top-6">
-                        <h3 className="text-lg font-medium mb-4">Preview</h3>
+                <aside className="hidden w-[360px] shrink-0 xl:block" aria-label="Preview">
+                    <div className="sticky top-0">
+                        <h2 className="mb-4 text-sm font-medium text-muted-foreground">Preview</h2>
                         <BioPreview bioPage={bioPage} />
                     </div>
-                </div>
+                </aside>
             </div>
         </div>
     )
@@ -221,7 +221,7 @@ function BioForm({ bioPage, systemInfo }: { bioPage: any; systemInfo?: SystemInf
     return (
         <>
             <header className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-                <h2 className="text-3xl font-bold tracking-tight">Bio Page</h2>
+                <h1 className="text-2xl font-semibold tracking-tight">Bio Page</h1>
                 <SaveIndicator state={saveState} />
             </header>
 
@@ -767,7 +767,7 @@ function AvatarUploader({
                         )}
                         {removeMutation.isPending && (
                             <span className="absolute inset-0 bg-black/40 flex items-center justify-center" aria-hidden="true">
-                                <Loader2 className="h-6 w-6 animate-spin text-white motion-reduce:animate-none" />
+                                <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none text-white motion-reduce:animate-none" />
                             </span>
                         )}
                     </button>

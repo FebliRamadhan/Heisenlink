@@ -106,17 +106,17 @@ export function UsersTable({
 
     return (
         <div className="space-y-4">
-            <div className="rounded-md border overflow-x-auto">
+            <div className="overflow-x-auto rounded-lg border bg-card">
                 <Table>
                     <TableHeader>
-                        <TableRow>
+                        <TableRow className="bg-muted/40 hover:bg-muted/40">
                             <TableHead>User</TableHead>
                             <TableHead>Role</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Links</TableHead>
+                            <TableHead className="text-right">Links</TableHead>
                             <TableHead>Last Login</TableHead>
                             <TableHead>Created</TableHead>
-                            <TableHead className="w-[70px]"></TableHead>
+                            <TableHead className="w-[56px]"><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -130,18 +130,22 @@ export function UsersTable({
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2">
-                                        {user.role === 'ADMIN' ? <Shield className="h-4 w-4 text-purple-600" /> : <User className="h-4 w-4 text-slate-500" />}
-                                        <span className="text-sm">{user.role}</span>
+                                        {user.role === 'ADMIN' ? <Shield className="h-4 w-4 text-foreground" aria-hidden="true" /> : <User className="h-4 w-4 text-muted-foreground" aria-hidden="true" />}
+                                        <span className="text-sm">{user.role === 'ADMIN' ? 'Admin' : 'User'}</span>
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <Switch
-                                        checked={user.isActive}
-                                        onCheckedChange={() => toggleStatus(user.id, user.isActive)}
-                                        disabled={isLoading === user.id}
-                                    />
+                                    <label className="inline-flex items-center gap-2 text-sm">
+                                        <Switch
+                                            checked={user.isActive}
+                                            onCheckedChange={() => toggleStatus(user.id, user.isActive)}
+                                            disabled={isLoading === user.id}
+                                            aria-label={`${user.isActive ? 'Deactivate' : 'Activate'} ${user.username}`}
+                                        />
+                                        <span className="w-14">{user.isActive ? 'Active' : 'Off'}</span>
+                                    </label>
                                 </TableCell>
-                                <TableCell>{user.linksCount || 0}</TableCell>
+                                <TableCell className="text-right tabular-nums">{user.linksCount || 0}</TableCell>
                                 <TableCell className="text-muted-foreground text-sm">
                                     {user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never'}
                                 </TableCell>

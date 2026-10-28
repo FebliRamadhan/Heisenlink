@@ -7,16 +7,10 @@ import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger, tabUnderline as TAB } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  ArrowLeft,
-  ExternalLink,
-  BarChart2,
-  Copy,
-  LayoutDashboard,
-} from "lucide-react";
+import { ArrowLeft, ExternalLink, Copy } from "lucide-react";
 import { useState, useEffect } from "react";
 import { FormBuilder } from "@/components/forms/form-builder";
 import { FormSettings } from "@/components/forms/form-settings";
@@ -68,7 +62,7 @@ export default function FormEditorPage({ params }: { params: { id: string } }) {
 
   if (isLoading) {
     return (
-      <div className="flex-1 space-y-4 p-8 pt-6">
+      <div className="mx-auto w-full max-w-6xl space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-96 w-full" />
       </div>
@@ -77,7 +71,7 @@ export default function FormEditorPage({ params }: { params: { id: string } }) {
 
   if (isError || !form) {
     return (
-      <div className="flex-1 p-8 pt-6">
+      <div className="mx-auto w-full max-w-6xl">
         <p className="text-muted-foreground">Form not found.</p>
         <Link href="/dashboard/forms" className="text-primary hover:underline">
           Back to forms
@@ -93,44 +87,41 @@ export default function FormEditorPage({ params }: { params: { id: string } }) {
   const canEdit = form.myRole !== "VIEWER";
 
   return (
-    <div className="flex-1 space-y-6 p-8 pt-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="flex flex-wrap items-center gap-3">
+        <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/forms" aria-label="Back to forms">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+            <ArrowLeft className="h-4 w-4" />
           </Link>
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={() =>
-              canEdit && title !== form.title && updateMutation.mutate({ title })
-            }
-            readOnly={!canEdit}
-            className="text-lg font-semibold border-0 shadow-none focus-visible:ring-1 px-1 max-w-md"
-            aria-label="Form title"
-          />
-          {!isOwner && (
-            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium capitalize">
-              {canEdit ? "Shared · Editor" : "Shared · Viewer"}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-3">
+        </Button>
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onBlur={() =>
+            canEdit && title !== form.title && updateMutation.mutate({ title })
+          }
+          readOnly={!canEdit}
+          className="h-10 min-w-[200px] max-w-xl flex-1 border-transparent px-2 text-xl font-semibold shadow-none hover:border-input focus-visible:border-input"
+          aria-label="Form title"
+        />
+        {!isOwner && (
+          <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+            Shared with you, {canEdit ? "editor" : "viewer"}
+          </span>
+        )}
+        <div className="ml-auto flex flex-wrap items-center gap-2">
           {canEdit && (
-            <label className="flex items-center gap-2 text-sm">
+            <label className="mr-2 flex items-center gap-2 text-sm">
               <Switch
                 checked={form.isPublished}
                 onCheckedChange={togglePublish}
               />
-              {form.isPublished ? "Published" : "Draft"}
+              <span className="w-16">{form.isPublished ? "Published" : "Draft"}</span>
             </label>
           )}
-          {isOwner && <ShareFormDialog formId={id} />}
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => {
               navigator.clipboard.writeText(form.url);
@@ -139,32 +130,25 @@ export default function FormEditorPage({ params }: { params: { id: string } }) {
           >
             <Copy className="mr-2 h-4 w-4" /> Copy link
           </Button>
-          <a href={form.url} target="_blank" rel="noopener noreferrer">
-            <Button variant="outline" size="sm">
+          <Button variant="ghost" size="sm" asChild>
+            <a href={form.url} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="mr-2 h-4 w-4" /> View
-            </Button>
-          </a>
-          <Link href={`/dashboard/forms/${id}/responses`}>
-            <Button variant="outline" size="sm">
-              <BarChart2 className="mr-2 h-4 w-4" /> Responses (
-              {form.responseCount})
-            </Button>
-          </Link>
-          <Link href={`/dashboard/forms/${id}/dashboards`}>
-            <Button variant="outline" size="sm">
-              <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboards
-            </Button>
-          </Link>
+            </a>
+          </Button>
+          {isOwner && <ShareFormDialog formId={id} />}
         </div>
       </div>
 
       {canEdit ? (
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList>
-            <TabsTrigger value="questions">Questions</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-            <TabsTrigger value="preview">Preview</TabsTrigger>
-          </TabsList>
+          <div className="flex flex-wrap items-end gap-1 border-b">
+            <TabsList className="h-auto gap-1 rounded-none bg-transparent p-0">
+              <TabsTrigger value="questions" className={TAB}>Questions</TabsTrigger>
+              <TabsTrigger value="settings" className={TAB}>Settings</TabsTrigger>
+              <TabsTrigger value="preview" className={TAB}>Preview</TabsTrigger>
+            </TabsList>
+            <SectionLinks id={id} responseCount={form.responseCount} />
+          </div>
 
           <TabsContent value="questions" className="mt-6">
             <FormBuilder form={form} />
@@ -179,14 +163,32 @@ export default function FormEditorPage({ params }: { params: { id: string } }) {
           </TabsContent>
         </Tabs>
       ) : (
-        <div className="space-y-4">
-          <div className="rounded-md border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-end gap-1 border-b">
+            <SectionLinks id={id} responseCount={form.responseCount} />
+          </div>
+          <p className="rounded-md border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
             You have view-only access to this form. You can see its questions and
             responses but cannot make changes.
-          </div>
+          </p>
           <FormPreview form={form} />
         </div>
       )}
     </div>
+  );
+}
+
+
+function SectionLinks({ id, responseCount }: { id: string; responseCount: number }) {
+  return (
+    <>
+      <Link href={`/dashboard/forms/${id}/responses`} className={`inline-flex items-center rounded-sm ${TAB} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}>
+        Responses
+        <span className="ml-2 rounded-full bg-muted px-1.5 text-xs tabular-nums text-foreground">{responseCount.toLocaleString("id-ID")}</span>
+      </Link>
+      <Link href={`/dashboard/forms/${id}/dashboards`} className={`inline-flex items-center rounded-sm ${TAB} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}>
+        Dashboards
+      </Link>
+    </>
   );
 }

@@ -259,7 +259,7 @@ export function BulkImportDialog() {
                             <Button variant="outline" onClick={resetState}>Back</Button>
                             <Button onClick={handleSubmit} disabled={isUploading}>
                                 {isUploading ? (
-                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importing...</>
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin motion-reduce:animate-none" /> Importing...</>
                                 ) : (
                                     <>Import {parsedLinks.length} Link{parsedLinks.length !== 1 ? "s" : ""}</>
                                 )}

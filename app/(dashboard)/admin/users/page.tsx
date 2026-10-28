@@ -25,8 +25,8 @@ export default function AdminUsersPage() {
     })
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
+        <div className="mx-auto w-full max-w-6xl space-y-6">
+            <h1 className="text-2xl font-semibold tracking-tight">User Management</h1>
             {isLoading ? <div>Loading...</div> : <UsersTable users={users || []} />}
         </div>
     )

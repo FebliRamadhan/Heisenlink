@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus } from "lucide-react"
+import { Plus, Search } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { useToast } from "@/components/ui/use-toast"
 import { FormsTable } from "@/components/forms/forms-table"
@@ -41,22 +41,27 @@ export default function FormsPage() {
     }
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Forms</h2>
+        <div className="mx-auto w-full max-w-6xl space-y-6">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-semibold tracking-tight">Forms</h1>
+                    <p className="mt-1 text-sm text-muted-foreground">Forms you own or that are shared with you.</p>
+                </div>
                 <Button onClick={createForm} disabled={creating}>
                     <Plus className="mr-2 h-4 w-4" /> {creating ? "Creating…" : "Create Form"}
                 </Button>
             </div>
-            <div className="flex items-center py-4">
+            <div className="relative w-full sm:max-w-sm">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                 <Input
-                    placeholder="Filter forms..."
+                    placeholder="Filter forms…"
+                    aria-label="Filter forms"
                     value={search}
                     onChange={(e) => {
                         setSearch(e.target.value)
                         setPage(1)
                     }}
-                    className="max-w-sm"
+                    className="pl-9"
                 />
             </div>
             {isLoading ? (

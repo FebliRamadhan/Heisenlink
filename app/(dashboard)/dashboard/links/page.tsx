@@ -59,17 +59,40 @@ export default function LinksPage() {
     }
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Links</h2>
-                <div className="flex items-center space-x-2">
+        <div className="mx-auto w-full max-w-6xl space-y-6">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-semibold tracking-tight">Links</h1>
+                    <p className="mt-1 text-sm text-muted-foreground">Short links you own, with their destinations and clicks.</p>
+                </div>
+                <Button asChild>
+                    <Link href="/dashboard/links/new">
+                        <Plus className="mr-2 h-4 w-4" /> Create Link
+                    </Link>
+                </Button>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="relative w-full sm:max-w-sm">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                    <Input
+                        placeholder="Filter links…"
+                        aria-label="Filter links"
+                        value={search}
+                        onChange={(event) => {
+                            setSearch(event.target.value)
+                            setPage(1) // Reset to first page on search
+                        }}
+                        className="pl-9"
+                    />
+                </div>
+                <div className="flex items-center gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline">
                                 <Download className="mr-2 h-4 w-4" /> Export
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent>
+                        <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleExport("csv")}>
                                 Export as CSV
                             </DropdownMenuItem>
@@ -79,23 +102,7 @@ export default function LinksPage() {
                         </DropdownMenuContent>
                     </DropdownMenu>
                     <BulkImportDialog />
-                    <Link href="/dashboard/links/new">
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" /> Create Link
-                        </Button>
-                    </Link>
                 </div>
-            </div>
-            <div className="flex items-center py-4">
-                <Input
-                    placeholder="Filter links..."
-                    value={search}
-                    onChange={(event) => {
-                        setSearch(event.target.value)
-                        setPage(1) // Reset to first page on search
-                    }}
-                    className="max-w-sm"
-                />
             </div>
             {isLoading ? (
                 <LinksTableSkeleton />

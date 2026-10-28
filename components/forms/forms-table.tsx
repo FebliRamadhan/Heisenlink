@@ -94,15 +94,15 @@ export function FormsTable({ forms, pagination, onPageChange }: FormsTableProps)
 
     return (
         <div className="space-y-4">
-            <div className="rounded-md border overflow-x-auto">
+            <div className="overflow-x-auto rounded-lg border bg-card">
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead>Form</TableHead>
+                        <TableRow className="bg-muted/40 hover:bg-muted/40">
+                            <TableHead className="min-w-[280px]">Form</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Responses</TableHead>
+                            <TableHead className="text-right">Responses</TableHead>
                             <TableHead>Updated</TableHead>
-                            <TableHead className="w-[70px]"></TableHead>
+                            <TableHead className="w-[56px]"><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -112,15 +112,15 @@ export function FormsTable({ forms, pagination, onPageChange }: FormsTableProps)
                             const canEdit = form.myRole !== "VIEWER"
                             return (
                                 <TableRow key={form.id}>
-                                    <TableCell>
-                                        <div className="flex flex-col space-y-1">
+                                    <TableCell className="py-3">
+                                        <div className="flex flex-col gap-1">
                                             <div className="flex items-center gap-2">
-                                                <Link href={`/dashboard/forms/${form.id}`} className="font-medium hover:underline">
+                                                <Link href={`/dashboard/forms/${form.id}`} className="font-medium hover:underline underline-offset-4 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                                                     {form.title}
                                                 </Link>
                                                 {!isOwner && (
-                                                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium capitalize text-muted-foreground">
-                                                        Shared · {canEdit ? "Editor" : "Viewer"}
+                                                    <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+                                                        Shared with you, {canEdit ? "editor" : "viewer"}
                                                     </span>
                                                 )}
                                             </div>
@@ -128,24 +128,29 @@ export function FormsTable({ forms, pagination, onPageChange }: FormsTableProps)
                                                 href={form.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex items-center text-xs text-muted-foreground hover:underline"
+                                                title={form.url}
+                                                className="inline-flex w-fit items-center gap-1 font-mono text-[13px] text-muted-foreground hover:text-foreground hover:underline underline-offset-4 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                             >
-                                                <span className="truncate max-w-[220px]">{form.url}</span>
-                                                <ExternalLink className="ml-1 h-3 w-3" />
+                                                <span className="truncate max-w-[260px]">{form.url.replace(/^https?:\/\/[^/]+/, "")}</span>
+                                                <ExternalLink className="h-3 w-3 shrink-0" aria-hidden="true" />
                                             </a>
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${status.className}`}>
+                                        <span className={`inline-flex whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${status.className}`}>
                                             {status.label}
                                         </span>
                                     </TableCell>
-                                    <TableCell>{form.responseCount}</TableCell>
-                                    <TableCell>{formatDate(form.updatedAt)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">
+                                        <Link href={`/dashboard/forms/${form.id}/responses`} className="hover:underline underline-offset-4 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                                            {form.responseCount.toLocaleString("id-ID")}
+                                        </Link>
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">{formatDate(form.updatedAt)}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0" aria-label="Form actions">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Form actions">
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
@@ -170,7 +175,7 @@ export function FormsTable({ forms, pagination, onPageChange }: FormsTableProps)
                                                 {isOwner && (
                                                     <>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-red-600" onClick={() => setPendingDelete(form)}>
+                                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setPendingDelete(form)}>
                                                             <Trash className="mr-2 h-4 w-4" /> Delete
                                                         </DropdownMenuItem>
                                                     </>
@@ -182,17 +187,11 @@ export function FormsTable({ forms, pagination, onPageChange }: FormsTableProps)
                             )
                         })}
                         {!forms.length && (
-                            <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
-                                    <div className="flex flex-col items-center justify-center space-y-2 py-4">
-                                        <div className="rounded-full bg-muted p-3">
-                                            <ClipboardList className="h-6 w-6 text-muted-foreground" />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <h3 className="font-medium">No forms yet</h3>
-                                            <p className="text-sm text-muted-foreground">Create a form to start collecting responses</p>
-                                        </div>
-                                    </div>
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={5} className="py-16 text-center">
+                                    <ClipboardList className="mx-auto h-6 w-6 text-muted-foreground" aria-hidden="true" />
+                                    <p className="mt-3 font-medium">No forms yet</p>
+                                    <p className="mt-1 text-sm text-muted-foreground">Create a form to start collecting responses</p>
                                 </TableCell>
                             </TableRow>
                         )}
@@ -201,8 +200,8 @@ export function FormsTable({ forms, pagination, onPageChange }: FormsTableProps)
             </div>
 
             {pagination && pagination.totalPages > 1 && (
-                <div className="flex items-center justify-end gap-2 py-4">
-                    <div className="text-sm text-muted-foreground">
+                <div className="flex items-center justify-end gap-2">
+                    <div className="mr-auto text-sm text-muted-foreground tabular-nums">
                         Page {pagination.page} of {pagination.totalPages}
                     </div>
                     <Button variant="outline" size="sm" onClick={() => onPageChange?.(pagination.page - 1)} disabled={!pagination.hasPrev}>
