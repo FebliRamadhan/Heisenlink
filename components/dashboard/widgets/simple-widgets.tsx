@@ -26,7 +26,7 @@ export const KpiWidget = ({
     <div className="text-4xl font-bold tabular-nums">
       {formatMetric(data.value)}
     </div>
-    <div className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
+    <div className="mt-1 text-sm text-muted-foreground">
       {AGG_LABEL[aggregation] || "Total"}
     </div>
   </div>

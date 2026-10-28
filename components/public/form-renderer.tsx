@@ -256,7 +256,6 @@ export function FormRenderer({ form }: { form: PublicForm }) {
         <>
             {/* Masthead */}
             <header style={{ marginBottom: 28 }}>
-                <span className="f-eyebrow"><span className="f-dot" aria-hidden="true" /> Formulir</span>
                 <h1 className="f-h1">{form.title}</h1>
                 {form.description && <p className="f-lede">{form.description}</p>}
             </header>
@@ -277,16 +276,15 @@ export function FormRenderer({ form }: { form: PublicForm }) {
                             <span className="f-mb-step">{onReview ? "Tinjau & Kirim" : sectionLabel(currentQuestions, page)}</span>
                             <span className="f-mb-pct">{Math.round(overallPct)}%</span>
                         </div>
-                        <div className="f-mb-track"><div className="f-mb-fill" style={{ width: `${((page + 1) / totalSteps) * 100}%` }} /></div>
+                        <div className="f-mb-track"><div className="f-mb-fill" style={{ transform: `scaleX(${(page + 1) / totalSteps})` }} /></div>
                     </div>
 
                     <div className="f-card" ref={cardRef}>
-                        <div className="f-track"><div className="f-fill" style={{ width: `${((page + 1) / totalSteps) * 100}%` }} /></div>
+                        <div className="f-track"><div className="f-fill" style={{ transform: `scaleX(${(page + 1) / totalSteps})` }} /></div>
 
                         {onReview ? (
                             <>
                                 <div className="f-card-head">
-                                    <div className="f-kicker"><span className="f-ix">★</span> Langkah akhir</div>
                                     <h2>Periksa kembali jawaban Anda</h2>
                                     <p className="f-desc">Pastikan semua informasi sudah benar sebelum mengirim.</p>
                                 </div>
@@ -306,10 +304,8 @@ export function FormRenderer({ form }: { form: PublicForm }) {
                         ) : (
                             <>
                                 <div className="f-card-head">
-                                    <div className="f-kicker">
-                                        <span className="f-ix">{String(page + 1).padStart(2, "0")} / {String(pages.length).padStart(2, "0")}</span> · Bagian
-                                    </div>
                                     <h2>{sectionLabel(currentQuestions, page)}</h2>
+                                    {pages.length > 1 && <p className="f-count">Bagian {page + 1} dari {pages.length}</p>}
                                     {section?.description && <p className="f-desc">{section.description}</p>}
                                 </div>
                                 <div className="f-card-body f-fade" key={page}>

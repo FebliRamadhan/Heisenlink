@@ -22,8 +22,6 @@ function paginate(questions: FormQuestion[]): FormQuestion[][] {
     return pages
 }
 
-const pad = (n: number) => String(n).padStart(2, "0")
-
 // Load the form theme's Google fonts on the dashboard (the /f layout that
 // normally injects them isn't mounted here). Injected once, idempotently.
 const FONT_HREF =
@@ -49,7 +47,6 @@ export function FormPreview({ form }: { form: Form }) {
     return (
         <div className="form-theme form-app-bg" style={{ borderRadius: 20, padding: "26px 22px 36px" }}>
             <header style={{ marginBottom: 22 }}>
-                <span className="f-eyebrow"><span className="f-dot" aria-hidden="true" /> Pratinjau</span>
                 <h1 className="f-h1">{form.title}</h1>
                 {form.description && <p className="f-lede">{form.description}</p>}
             </header>
@@ -69,10 +66,8 @@ export function FormPreview({ form }: { form: Form }) {
                     <div key={pi} className="f-card" style={{ marginTop: 16 }}>
                         {showHead && (
                             <div className="f-card-head">
-                                <div className="f-kicker">
-                                    <span className="f-ix">{pad(pi + 1)} / {pad(pages.length)}</span> · Bagian
-                                </div>
                                 <h2>{label}</h2>
+                                {pages.length > 1 && <p className="f-count">Bagian {pi + 1} dari {pages.length}</p>}
                                 {section?.description && <p className="f-desc">{section.description}</p>}
                             </div>
                         )}

@@ -159,10 +159,10 @@ export default function LoginPage() {
                             <div className="absolute inset-0 flex items-center">
                                 <span className="w-full border-t" />
                             </div>
-                            <div className="relative flex justify-center text-xs uppercase">
+                            <div className="relative flex justify-center text-xs">
                                 <button
                                     type="button"
-                                    className="bg-card px-2 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                                    className="bg-card px-2 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                     onClick={() => setShowLocalLogin(!showLocalLogin)}
                                 >
                                     {showLocalLogin ? (

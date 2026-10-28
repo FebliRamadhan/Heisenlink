@@ -169,7 +169,7 @@ export function QuestionEditor({
                         />
                         Required
                     </label>
-                ) : <span className="text-xs text-muted-foreground">Display-only — not answered</span>}
+                ) : <span className="text-xs text-muted-foreground">Display-only, not answered</span>}
 
                 <Button
                     variant="ghost"

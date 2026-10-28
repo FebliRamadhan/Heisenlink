@@ -39,7 +39,7 @@ export default function ForbiddenPage() {
             </div>
 
             <div className="mt-12 text-sm text-muted-foreground">
-                Heisenlink 🧪
+                Heisenlink
             </div>
         </div>
     )

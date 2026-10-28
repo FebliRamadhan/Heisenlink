@@ -53,18 +53,11 @@ export function ConfirmationPage({ destinationUrl, title, code }: ConfirmationPa
     const strokeDashoffset = circumference - (progress / 100) * circumference
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-5">
-                <div className="absolute inset-0" style={{
-                    backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-                    backgroundSize: '40px 40px'
-                }} />
-            </div>
+        <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 px-4">
 
             <div className="relative w-full max-w-lg">
                 {/* Card */}
-                <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl">
+                <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-lg">
                     {/* Header */}
                     <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-emerald-500/20 rounded-lg">
@@ -77,10 +70,10 @@ export function ConfirmationPage({ destinationUrl, title, code }: ConfirmationPa
                     </div>
 
                     {/* Destination Card */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-5 mb-6">
+                    <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 mb-6">
                         <div className="flex items-start gap-4">
                             {/* Favicon */}
-                            <div className="flex-shrink-0 w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center overflow-hidden">
+                            <div className="flex-shrink-0 w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center overflow-hidden">
                                 {favicon ? (
                                     <img
                                         src={favicon}
@@ -118,7 +111,7 @@ export function ConfirmationPage({ destinationUrl, title, code }: ConfirmationPa
                     <div className="flex items-center gap-4">
                         {/* Countdown Circle */}
                         <div className="relative flex-shrink-0">
-                            <svg className="w-16 h-16 -rotate-90" viewBox="0 0 100 100">
+                            <svg className="w-16 h-16 -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
                                 {/* Background circle */}
                                 <circle
                                     cx="50" cy="50" r="40"
@@ -135,7 +128,7 @@ export function ConfirmationPage({ destinationUrl, title, code }: ConfirmationPa
                                     strokeLinecap="round"
                                     strokeDasharray={circumference}
                                     strokeDashoffset={strokeDashoffset}
-                                    className="transition-all duration-1000 ease-linear"
+                                    className="transition-[stroke-dashoffset] duration-1000 ease-linear motion-reduce:transition-none"
                                 />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
@@ -147,14 +140,14 @@ export function ConfirmationPage({ destinationUrl, title, code }: ConfirmationPa
                         <div className="flex-1 space-y-2">
                             <button
                                 onClick={handleContinue}
-                                className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
+                                className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-100 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
                             >
                                 <ExternalLink className="h-4 w-4" />
                                 Continue to Site
                             </button>
                             <button
                                 onClick={handleGoBack}
-                                className="w-full py-2 px-4 bg-transparent hover:bg-white/5 text-slate-400 hover:text-white text-sm font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                                className="w-full py-2 px-4 bg-transparent hover:bg-slate-700 text-slate-300 hover:text-white text-sm font-medium rounded-xl transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-100 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 flex items-center justify-center gap-2"
                             >
                                 <ArrowLeft className="h-3 w-3" />
                                 Go Back
@@ -163,15 +156,15 @@ export function ConfirmationPage({ destinationUrl, title, code }: ConfirmationPa
                     </div>
 
                     {/* Auto-redirect notice */}
-                    <div className="mt-4 flex items-center gap-2 text-slate-500 text-xs">
+                    <div className="mt-4 flex items-center gap-2 text-slate-400 text-xs">
                         <Clock className="h-3 w-3" />
-                        <span>Auto-redirecting in {countdown} second{countdown !== 1 ? 's' : ''}...</span>
+                        <span>Auto-redirecting in {countdown} second{countdown !== 1 ? 's' : ''}…</span>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="text-center mt-6 text-slate-500 text-xs">
-                    Powered by <span className="text-emerald-400 font-medium">Heisenlink</span> 🧪
+                <div className="text-center mt-6 text-slate-400 text-xs">
+                    Powered by <span className="text-emerald-400 font-medium">Heisenlink</span>
                 </div>
             </div>
         </div>

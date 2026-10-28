@@ -286,7 +286,7 @@ function PublicBioView({ bioPage }: { bioPage: any }) {
             </div>
 
             <div className="mt-12 text-sm opacity-60">
-                Powered by <span className="font-semibold">Biro DATIN</span> — Kementerian PANRB
+                Powered by <span className="font-semibold">Biro DATIN</span>, Kementerian PANRB
             </div>
         </main>
     )
