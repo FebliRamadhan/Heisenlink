@@ -54,7 +54,7 @@ const PasswordGate = ({
       onSubmit={submit}
       className="mx-auto mt-20 max-w-sm space-y-4 rounded-lg border bg-card p-8 text-center"
     >
-      <Lock className="mx-auto h-8 w-8 text-muted-foreground" />
+      <Lock className="mx-auto h-6 w-6 text-muted-foreground" aria-hidden="true" />
       <div>
         <h1 className="text-lg font-semibold">{title}</h1>
         <p className="text-sm text-muted-foreground">
@@ -64,6 +64,7 @@ const PasswordGate = ({
       <Input
         type="password"
         placeholder="Enter password"
+        aria-label="Dashboard password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         autoFocus
@@ -96,9 +97,14 @@ export const DashboardView = ({
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">{dashboard.title}</h1>
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <header className="mb-8">
+        <div className="mb-6 flex items-center gap-3 text-sm font-medium text-muted-foreground">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-panrb.png" alt="" className="h-10 w-auto" />
+          <span>Kementerian PANRB</span>
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight">{dashboard.title}</h1>
         {dashboard.description && (
           <p className="mt-1 text-muted-foreground">{dashboard.description}</p>
         )}
@@ -106,7 +112,7 @@ export const DashboardView = ({
       {widgets && widgets.length > 0 ? (
         <DashboardGrid widgets={widgets} layout={dashboard.layout} />
       ) : (
-        <div className="flex h-64 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
+        <div className="rounded-lg border bg-card py-16 text-center text-muted-foreground">
           This dashboard has no widgets yet.
         </div>
       )}

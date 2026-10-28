@@ -1,24 +1,32 @@
-// Default categorical palette for dashboard charts. Widgets may override via
-// their config.colors. Kept here so every widget renders consistently.
+// Categorical palette for dashboard charts: the dataviz reference palette, light steps,
+// validated on #fff (lightness, chroma, CVD and normal-vision separation all pass).
+// Mirrors --chart-1..8 in app/globals.css; hex here because recharts writes SVG
+// attributes, where var() does not resolve. Fixed order, never cycled.
 export const DEFAULT_COLORS = [
-  "#6366f1",
-  "#ec4899",
-  "#14b8a6",
-  "#f59e0b",
-  "#8b5cf6",
-  "#ef4444",
-  "#10b981",
-  "#3b82f6",
-  "#f97316",
-  "#a855f7",
+  "#2a78d6", // blue
+  "#eb6834", // orange
+  "#1baf7a", // aqua
+  "#eda100", // yellow
+  "#e87ba4", // magenta
+  "#008300", // green
+  "#4a3aa7", // violet
+  "#e34948", // red
 ];
+
+// A ninth category is never a generated hue: everything past slot 8 reads as "other".
+export const OTHER_COLOR = "#a3a3a3";
+
+// Recessive chart chrome (axis text, grid) as literal values for the same reason.
+export const AXIS_TEXT = "#737373";
+export const GRID_LINE = "#e5e5e5";
+export const SURFACE = "#ffffff";
 
 export const colorAt = (
   colors: string[] | undefined,
   index: number,
 ): string => {
   const palette = colors && colors.length > 0 ? colors : DEFAULT_COLORS;
-  return palette[index % palette.length];
+  return palette[index] ?? OTHER_COLOR;
 };
 
 /** Format a numeric KPI value: round floats to 2 decimals, pass integers through. */

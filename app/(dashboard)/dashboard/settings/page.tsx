@@ -34,27 +34,32 @@ export default function SettingsPage() {
 
     return (
         <div className="mx-auto w-full max-w-6xl space-y-6">
-            <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+            <div>
+                <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+                <p className="mt-1 text-sm text-muted-foreground">Your account and password.</p>
+            </div>
 
-            <div className="grid gap-4 max-w-2xl">
+            <div className="grid max-w-2xl gap-4">
                 <Card>
                     <CardHeader>
                         <CardTitle>Profile</CardTitle>
                         <CardDescription>Your account information</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label>Username</Label>
-                            <Input value={user?.username} disabled />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Email</Label>
-                            <Input value={user?.email} disabled />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Role</Label>
-                            <Input value={user?.role} disabled />
-                        </div>
+                    <CardContent>
+                        <dl className="divide-y border-t text-sm">
+                            <div className="grid grid-cols-[8rem_minmax(0,1fr)] gap-4 py-3">
+                                <dt className="text-muted-foreground">Username</dt>
+                                <dd className="font-mono">{user?.username}</dd>
+                            </div>
+                            <div className="grid grid-cols-[8rem_minmax(0,1fr)] gap-4 py-3">
+                                <dt className="text-muted-foreground">Email</dt>
+                                <dd className="truncate">{user?.email}</dd>
+                            </div>
+                            <div className="grid grid-cols-[8rem_minmax(0,1fr)] gap-4 py-3">
+                                <dt className="text-muted-foreground">Role</dt>
+                                <dd>{user?.role === "ADMIN" ? "Admin" : "User"}</dd>
+                            </div>
+                        </dl>
                     </CardContent>
                 </Card>
 
@@ -66,16 +71,20 @@ export default function SettingsPage() {
                     <CardContent>
                         <form onSubmit={handlePasswordChange} className="space-y-4">
                             <div className="space-y-2">
-                                <Label>New Password</Label>
+                                <Label htmlFor="new-password">New Password</Label>
                                 <Input
+                                    id="new-password"
+                                    autoComplete="new-password"
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Confirm Password</Label>
+                                <Label htmlFor="confirm-password">Confirm Password</Label>
                                 <Input
+                                    id="confirm-password"
+                                    autoComplete="new-password"
                                     type="password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}

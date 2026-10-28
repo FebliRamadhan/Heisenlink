@@ -3,11 +3,11 @@
 import { useQuery } from "@tanstack/react-query"
 import api from "@/lib/api"
 import { OverviewStats } from "@/components/dashboard/overview-stats"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ClicksChart } from "@/components/dashboard/analytics/clicks-chart"
 import { DeviceChart, BrowserChart, OSChart } from "@/components/dashboard/analytics/breakdown-charts"
 import { ReferrerList } from "@/components/dashboard/analytics/referrer-list"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { RankedList } from "@/components/dashboard/analytics/ranked-list"
 import { useState } from "react"
 import { subDays } from "date-fns"
 import { DateRange } from "react-day-picker"
@@ -34,18 +34,18 @@ export default function AnalyticsPage() {
 
     return (
         <div className="mx-auto w-full max-w-6xl space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
-                <div className="flex items-center space-x-2">
-                    {/* Placeholder for DateRangePicker until implemented */}
-                    <div className="text-sm text-muted-foreground mr-4">
-                        Last 30 Days
-                    </div>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
+                    <p className="mt-1 text-sm text-muted-foreground">Last 30 Days</p>
                 </div>
             </div>
 
             {isLoading ? (
-                <div>Loading analytics...</div>
+                <div className="space-y-4">
+                    <Skeleton className="h-[108px] w-full rounded-lg" />
+                    <Skeleton className="h-[340px] w-full rounded-lg" />
+                </div>
             ) : (
                 <div className="space-y-4">
                     <OverviewStats
@@ -54,63 +54,28 @@ export default function AnalyticsPage() {
                         bioLinkClicks={overview?.bioLinkClicks}
                     />
 
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                        <ClicksChart data={overview?.clicksByDay || []} />
+                    <ClicksChart data={overview?.clicksByDay || []} />
 
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <RankedList
+                            title="Top performing links"
+                            description="Most clicked links in this period"
+                            empty="No clicks in this period"
+                            items={(overview?.topLinks || []).map((link: any) => ({
+                                key: link.id,
+                                label: link.title || link.code,
+                                sublabel: `/${link.code}`,
+                                value: Number(link.clickCount) || 0,
+                                href: `/dashboard/links/${link.id}`,
+                            }))}
+                        />
                         <ReferrerList data={overview?.referrerBreakdown || []} />
                     </div>
 
-                    <Tabs defaultValue="devices" className="space-y-4">
-                        <TabsList>
-                            <TabsTrigger value="devices">Devices</TabsTrigger>
-                            <TabsTrigger value="browsers">Browsers</TabsTrigger>
-                            <TabsTrigger value="os">OS</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="devices" className="space-y-4">
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                <div className="col-span-1">
-                                    <DeviceChart data={overview?.deviceBreakdown || []} />
-                                </div>
-                            </div>
-                        </TabsContent>
-                        <TabsContent value="browsers" className="space-y-4">
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                <div className="col-span-1">
-                                    <BrowserChart data={overview?.browserBreakdown || []} />
-                                </div>
-                            </div>
-                        </TabsContent>
-                        <TabsContent value="os" className="space-y-4">
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                <div className="col-span-1">
-                                    <OSChart data={overview?.osBreakdown || []} />
-                                </div>
-                            </div>
-                        </TabsContent>
-                    </Tabs>
-
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                        <Card className="col-span-4">
-                            <CardHeader>
-                                <CardTitle>Top Performing Links</CardTitle>
-                                <CardDescription>
-                                    Most clicked links in this period
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    {overview?.topLinks?.map((link: any, i: number) => (
-                                        <div key={link.id} className="flex items-center">
-                                            <div className="w-8 font-bold text-muted-foreground">{i + 1}.</div>
-                                            <div className="space-y-1 overflow-hidden">
-                                                <p className="text-sm font-medium leading-none truncate">{link.title || link.code}</p>
-                                            </div>
-                                            <div className="ml-auto font-medium">{link.clickCount.toLocaleString()}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
+                    <div className="grid gap-4 md:grid-cols-3">
+                        <DeviceChart data={overview?.deviceBreakdown || []} />
+                        <BrowserChart data={overview?.browserBreakdown || []} />
+                        <OSChart data={overview?.osBreakdown || []} />
                     </div>
                 </div>
             )}

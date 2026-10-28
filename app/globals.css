@@ -1,6 +1,6 @@
 /* Hallmark · shape: app screen · genre: modern-minimal · theme: brand · redesign: full · scope: app
  * paper: white, second neutral hsl(0 0% 96%) for the sidebar and table heads · accent: ink for actions; PANRB red (--brand, sampled from logo-panrb.png) marks the current nav item only · display: Plus Jakarta Sans · body: Plus Jakarta Sans · signature: the short-link ledger (title over /code in mono, copy in reach) · v2.0.0 */
-/* Hallmark · pre-emit critique: P3 H- E3 S2 R3 V3 · weakest: S, the overview still opens on four stat cards; left as found */
+/* Hallmark · pre-emit critique: P3 H- E3 S3 R3 V3 · weakest: E, the bio editor's 878-line form keeps its card stack; restyled, not recomposed */
 /* Hallmark · dismissed 26a/26b per-file "anywhere" findings: focus, press and disabled states live in components/ui (button, input, tabs) · dismissed 19 on the empty-cell "—" in responses-table: a table placeholder · waive 39b on .f-step: two-line stepper rows, not single controls */
 @tailwind base;
 @tailwind components;
@@ -67,15 +67,15 @@
     --grid-line: rgb(0 0 0 / 0.05);
     --grid-line-dark: rgb(255 255 255 / 0.05);
 
-    --chart-1: 12 76% 61%;
-
-    --chart-2: 173 58% 39%;
-
-    --chart-3: 197 37% 24%;
-
-    --chart-4: 43 74% 66%;
-
-    --chart-5: 27 87% 67%;
+    /* categorical data slots, validated (dataviz reference palette, light, on #fff); fixed order, never cycled */
+    --chart-1: 213 68% 50%;
+    --chart-2: 17 82% 56%;
+    --chart-3: 159 73% 40%;
+    --chart-4: 41 100% 46%;
+    --chart-5: 337 70% 70%;
+    --chart-6: 120 100% 26%;
+    --chart-7: 249 48% 44%;
+    --chart-8: 0 73% 59%;
   }
 
   .dark {
@@ -111,11 +111,15 @@
     --brand: 359 58% 56%;
     --brand-foreground: 0 0% 100%;
     --grid-line: var(--grid-line-dark);
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* the same eight hues stepped for the dark surface, validated on #0a0a0a */
+    --chart-1: 213 77% 56%;
+    --chart-2: 17 70% 50%;
+    --chart-3: 159 73% 36%;
+    --chart-4: 40 100% 39%;
+    --chart-5: 338 61% 58%;
+    --chart-6: 120 100% 26%;
+    --chart-7: 247 69% 72%;
+    --chart-8: 0 72% 65%;
   }
 }
 

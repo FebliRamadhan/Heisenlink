@@ -8,6 +8,7 @@ import api from "@/lib/api";
 import { dashboardsApi, type WidgetInput } from "@/lib/dashboards-api";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid";
 import { AddWidgetDialog } from "@/components/dashboard/add-widget-dialog";
@@ -127,18 +128,18 @@ export default function DashboardBuilderPage({
   }
 
   return (
-    <div className="flex-1 space-y-4 p-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Link
-            href={`/dashboard/forms/${formId}/dashboards`}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href={`/dashboard/forms/${formId}/dashboards`} aria-label="Back to dashboards">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
           <Input
             defaultValue={dashboard.title}
-            className="h-9 w-64 border-transparent text-lg font-semibold hover:border-input focus:border-input"
+            aria-label="Dashboard title"
+            className="h-10 min-w-[200px] max-w-md flex-1 border-transparent px-2 text-xl font-semibold shadow-none hover:border-input focus-visible:border-input"
             onBlur={(e) => {
               if (e.target.value && e.target.value !== dashboard.title) {
                 updateDashboard.mutate({ title: e.target.value });
@@ -162,9 +163,9 @@ export default function DashboardBuilderPage({
       </div>
 
       {widgets.length === 0 ? (
-        <div className="flex h-72 flex-col items-center justify-center rounded-lg border border-dashed text-center text-muted-foreground">
-          <p className="mb-1 font-medium">No widgets yet</p>
-          <p className="text-sm">
+        <div className="rounded-lg border bg-card py-16 text-center">
+          <p className="font-medium">No widgets yet</p>
+          <p className="mt-1 text-sm text-muted-foreground">
             Add a widget to start visualizing this form&apos;s responses.
           </p>
         </div>

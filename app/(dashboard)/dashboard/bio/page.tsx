@@ -16,7 +16,7 @@ import { BioPreview } from "@/components/bio/bio-preview"
 import { ThemeSelector } from "@/components/bio/theme-selector"
 import { SocialLinksEditor } from "@/components/bio/social-links-editor"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger, tabUnderline } from "@/components/ui/tabs"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -220,17 +220,20 @@ function BioForm({ bioPage, systemInfo }: { bioPage: any; systemInfo?: SystemInf
 
     return (
         <>
-            <header className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-                <h1 className="text-2xl font-semibold tracking-tight">Bio Page</h1>
+            <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-semibold tracking-tight">Bio Page</h1>
+                    <p className="mt-1 text-sm text-muted-foreground">One public page that gathers your links.</p>
+                </div>
                 <SaveIndicator state={saveState} />
             </header>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                <TabsList>
-                    <TabsTrigger value="content">Content</TabsTrigger>
-                    <TabsTrigger value="links">Links</TabsTrigger>
-                    <TabsTrigger value="appearance">Appearance</TabsTrigger>
-                    <TabsTrigger value="settings">Settings</TabsTrigger>
+                <TabsList className="h-auto w-full justify-start gap-1 rounded-none border-b bg-transparent p-0">
+                    <TabsTrigger value="content" className={tabUnderline}>Content</TabsTrigger>
+                    <TabsTrigger value="links" className={tabUnderline}>Links</TabsTrigger>
+                    <TabsTrigger value="appearance" className={tabUnderline}>Appearance</TabsTrigger>
+                    <TabsTrigger value="settings" className={tabUnderline}>Settings</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="content" className="space-y-4">

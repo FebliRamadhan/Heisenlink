@@ -49,7 +49,7 @@ export default async function PublicDashboardPage({
   if (!dashboard) notFound();
 
   return (
-    <main className="min-h-screen bg-muted/20">
+    <main className="min-h-screen bg-muted/40">
       <DashboardView dashboard={dashboard} />
     </main>
   );

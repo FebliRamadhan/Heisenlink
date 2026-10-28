@@ -1,12 +1,31 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart2, Link as LinkIcon, MousePointer, UserCircle } from "lucide-react"
-
 interface OverviewStatsProps {
     totalLinks: number
     totalClicks: number
     bioLinkClicks: number
+}
+
+export function StatStrip({ stats }: { stats: { label: string; value: string; note?: string }[] }) {
+    return (
+        <dl className="grid grid-cols-2 overflow-hidden rounded-lg border bg-card lg:grid-cols-4">
+            {stats.map((s, i) => (
+                <div
+                    key={s.label}
+                    className={[
+                        "px-5 py-4",
+                        i % 2 === 1 ? "border-l" : "",
+                        i >= 2 ? "border-t lg:border-t-0" : "",
+                        i === 2 ? "lg:border-l" : "",
+                    ].join(" ")}
+                >
+                    <dt className="text-sm text-muted-foreground">{s.label}</dt>
+                    <dd className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">{s.value}</dd>
+                    {s.note && <dd className="mt-1 text-xs text-muted-foreground">{s.note}</dd>}
+                </div>
+            ))}
+        </dl>
+    )
 }
 
 export function OverviewStats({
@@ -14,58 +33,19 @@ export function OverviewStats({
     totalClicks = 0,
     bioLinkClicks = 0,
 }: OverviewStatsProps) {
+    const n = (v: number) => v.toLocaleString("id-ID")
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Links</CardTitle>
-                    <LinkIcon className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{totalLinks.toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">
-                        Current active shortlinks
-                    </p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Clicks</CardTitle>
-                    <MousePointer className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{totalClicks.toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">
-                        All time link clicks
-                    </p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Bio Clicks</CardTitle>
-                    <UserCircle className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{bioLinkClicks.toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">
-                        Clicks from bio page
-                    </p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Avg CTR</CardTitle>
-                    <BarChart2 className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">
-                        {totalLinks > 0 ? (totalClicks / totalLinks).toFixed(1) : 0}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                        Clicks per link
-                    </p>
-                </CardContent>
-            </Card>
-        </div>
+        <StatStrip
+            stats={[
+                { label: "Links", value: n(totalLinks), note: "Current active shortlinks" },
+                { label: "Clicks", value: n(totalClicks), note: "All time link clicks" },
+                { label: "Bio clicks", value: n(bioLinkClicks), note: "Clicks from bio page" },
+                {
+                    label: "Clicks per link",
+                    value: totalLinks > 0 ? (totalClicks / totalLinks).toLocaleString("id-ID", { maximumFractionDigits: 1 }) : "0",
+                    note: "Average across your links",
+                },
+            ]}
+        />
     )
 }

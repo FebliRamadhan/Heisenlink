@@ -1,91 +1,38 @@
 "use client"
 
-import {
-    Cell,
-    Pie,
-    PieChart,
-    ResponsiveContainer,
-    Tooltip,
-    Legend
-} from "recharts"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+import { RankedList } from "./ranked-list"
 
 interface BreakdownChartProps {
     data: { [key: string]: any; count: number }[]
     dataKey: string
     title: string
+    className?: string
 }
 
-export function BreakdownChart({ data, dataKey, title }: BreakdownChartProps) {
-    if (!data || data.length === 0) {
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle>{title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                        No data available
-                    </div>
-                </CardContent>
-            </Card>
-        )
-    }
-
-    const chartData = data.map(item => ({
-        name: item[dataKey] || 'Unknown',
-        value: item.count
-    }))
-
+/** A handful of categories ranked by count: a list with bars reads better than a pie. */
+export function BreakdownChart({ data, dataKey, title, className }: BreakdownChartProps) {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={chartData}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false} // Hide labels to avoid clutter
-                                outerRadius={80}
-                                fill="#8884d8"
-                                dataKey="value"
-                            >
-                                {chartData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip
-                                formatter={(value) => [value, 'Clicks']}
-                                contentStyle={{
-                                    backgroundColor: "hsl(var(--background))",
-                                    border: "1px solid hsl(var(--border))",
-                                }}
-                                itemStyle={{ color: "hsl(var(--foreground))" }}
-                            />
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
-            </CardContent>
-        </Card>
+        <RankedList
+            title={title}
+            className={className}
+            empty="No data available"
+            items={(data || []).map((item, i) => ({
+                key: `${item[dataKey] ?? "unknown"}-${i}`,
+                label: item[dataKey] || "Unknown",
+                value: Number(item.count),
+            }))}
+        />
     )
 }
 
-export function DeviceChart({ data }: { data: any[] }) {
-    return <BreakdownChart data={data} dataKey="device" title="Device Distribution" />
+export function DeviceChart({ data, className }: { data: any[]; className?: string }) {
+    return <BreakdownChart data={data} dataKey="device" title="Devices" className={className} />
 }
 
-export function BrowserChart({ data }: { data: any[] }) {
-    return <BreakdownChart data={data} dataKey="browser" title="Browser Distribution" />
+export function BrowserChart({ data, className }: { data: any[]; className?: string }) {
+    return <BreakdownChart data={data} dataKey="browser" title="Browsers" className={className} />
 }
 
-export function OSChart({ data }: { data: any[] }) {
-    return <BreakdownChart data={data} dataKey="os" title="OS Distribution" />
+export function OSChart({ data, className }: { data: any[]; className?: string }) {
+    return <BreakdownChart data={data} dataKey="os" title="Operating systems" className={className} />
 }

@@ -199,21 +199,33 @@ export default async function PublicPage({ params }: { params: { slug: string } 
 
 function PublicBioView({ bioPage }: { bioPage: any }) {
     // Build THEMES from shared constants for single source of truth
-    const THEMES: Record<string, { background: string; text: string }> = {}
+    const THEMES: Record<string, { background: string; text: string; textSecondary: string; card: string }> = {}
     for (const [key, value] of Object.entries(themeConstants)) {
         const t = value as any
-        THEMES[key] = { background: t.background, text: t.text }
+        THEMES[key] = { background: t.background, text: t.text, textSecondary: t.textSecondary, card: t.cardBackground }
     }
 
-    const theme = THEMES[bioPage.theme] || THEMES.gradient
+    const theme = THEMES[bioPage.theme] || THEMES.panrb
+    // Panels take the theme's own card colour; the edge is the text colour at low strength,
+    // so they read on light themes as well as on the gradients.
+    const surfaceVars = {
+        "--bio-surface-bg": theme.card,
+        "--bio-surface-bg-strong": theme.card,
+        "--bio-surface-border": "color-mix(in srgb, currentColor 16%, transparent)",
+    } as React.CSSProperties
+    const initial = (bioPage.title || "?").trim().charAt(0).toUpperCase()
 
     return (
         <main
             className="min-h-screen w-full flex flex-col items-center py-12 px-4"
-            style={{ background: theme.background, color: theme.text }}
+            style={{ background: theme.background, color: theme.text, ...surfaceVars }}
         >
             <div className="w-full max-w-md space-y-8 flex flex-col items-center">
-                <div className="w-32 h-32 rounded-full border-4 border-white/20 overflow-hidden bg-muted">
+                <div
+                    className="bio-surface flex h-28 w-28 items-center justify-center overflow-hidden rounded-full text-4xl font-semibold"
+                    aria-hidden={bioPage.avatarUrl ? undefined : true}
+                >
+                    {!bioPage.avatarUrl && initial}
                     {bioPage.avatarUrl && (
                         <img
                             src={bioPage.avatarUrl}
@@ -229,7 +241,7 @@ function PublicBioView({ bioPage }: { bioPage: any }) {
                 <div className="text-center space-y-2">
                     <h1 className="text-3xl font-bold text-balance">{bioPage.title}</h1>
                     {bioPage.bio && (
-                        <p className="text-lg opacity-90 line-clamp-3 text-pretty">{bioPage.bio}</p>
+                        <p className="text-lg line-clamp-3 text-pretty" style={{ color: theme.textSecondary }}>{bioPage.bio}</p>
                     )}
                 </div>
 
@@ -245,7 +257,7 @@ function PublicBioView({ bioPage }: { bioPage: any }) {
                                         href={href}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="bio-surface w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-[var(--motion-base)] ease-[var(--ease-out)] hover:scale-110 focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                                        className="bio-surface w-12 h-12 rounded-full flex items-center justify-center transition-opacity duration-[var(--motion-base)] hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
                                         aria-label={`${label} (opens in new tab)`}
                                     >
                                         <SocialIcon platform={social.platform} className="h-5 w-5" ariaHidden />
@@ -266,9 +278,8 @@ function PublicBioView({ bioPage }: { bioPage: any }) {
                                     rel="noopener noreferrer"
                                     data-href={link.url}
                                     className={
-                                        idx === 0
-                                            ? "bio-surface-strong block w-full p-4 rounded-xl text-center font-bold text-lg transition-transform duration-[var(--motion-base)] ease-[var(--ease-out)] hover:scale-[1.02] focus-visible:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-                                            : "bio-surface block w-full p-4 rounded-xl text-center font-bold text-lg transition-transform duration-[var(--motion-base)] ease-[var(--ease-out)] hover:scale-[1.02] focus-visible:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                                        (idx === 0 ? "bio-surface-strong font-semibold" : "bio-surface font-medium") +
+                                        " block w-full rounded-xl px-5 py-4 text-center text-lg transition-opacity duration-[var(--motion-base)] hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
                                     }
                                 >
                                     {link.title}
@@ -285,7 +296,7 @@ function PublicBioView({ bioPage }: { bioPage: any }) {
                 )}
             </div>
 
-            <div className="mt-12 text-sm opacity-60">
+            <div className="mt-12 text-sm" style={{ color: theme.textSecondary }}>
                 Powered by <span className="font-semibold">Biro DATIN</span>, Kementerian PANRB
             </div>
         </main>

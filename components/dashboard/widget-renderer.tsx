@@ -15,8 +15,9 @@ const WidgetBody = ({ widget }: { widget: ComputedWidget }) => {
     case "KPI":
       return <KpiWidget data={data} aggregation={aggregation} />;
     case "BAR":
-    case "SCALE_HISTOGRAM":
       return <BarWidget data={data} config={config} />;
+    case "SCALE_HISTOGRAM":
+      return <BarWidget data={data} config={config} vertical />;
     case "PIE":
       return <PieWidget data={data} config={config} />;
     case "DONUT":
@@ -54,9 +55,9 @@ interface WidgetRendererProps {
  * component renders inside the editable grid and on the read-only public page.
  */
 export const WidgetRenderer = ({ widget, actions }: WidgetRendererProps) => (
-  <div className="flex h-full flex-col rounded-lg border bg-card p-3 shadow-sm">
-    <div className="mb-2 flex items-start justify-between gap-2">
-      <h3 className="truncate text-sm font-semibold">
+  <div className="flex h-full flex-col rounded-lg border bg-card p-4">
+    <div className="mb-3 flex items-start justify-between gap-2">
+      <h3 className="truncate text-sm font-medium">
         {widget.title || FALLBACK_TITLES[widget.type] || "Widget"}
       </h3>
       {actions}

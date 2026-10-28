@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils"
 
 const THEMES = [
+    { id: 'panrb', name: 'PANRB', bg: 'bg-neutral-100', accent: 'border-b-4 border-brand' },
     { id: 'light', name: 'Light', bg: 'bg-white' },
     { id: 'dark', name: 'Dark', bg: 'bg-gray-900' },
     { id: 'gradient', name: 'Gradient', bg: 'bg-gradient-to-br from-indigo-500 to-purple-600' },
@@ -32,7 +33,7 @@ export function ThemeSelector({ currentTheme, onSelect }: ThemeSelectorProps) {
                     key={theme.id}
                     onClick={() => onSelect(theme.id)}
                     className={cn(
-                        "relative group rounded-xl overflow-hidden aspect-[9/16] border-4 transition-all",
+                        "relative group rounded-xl overflow-hidden aspect-[9/16] border-4 transition-colors",
                         currentTheme === theme.id ? "border-primary ring-2 ring-primary ring-offset-2" : "border-transparent hover:border-muted-foreground/30"
                     )}
                 >

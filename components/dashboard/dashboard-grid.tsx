@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import GridLayout, { WidthProvider, type Layout } from "react-grid-layout";
 import type { ComputedWidget, LayoutItem } from "@/types";
 import { WidgetRenderer } from "./widget-renderer";
@@ -44,6 +44,34 @@ export const DashboardGrid = ({
     const fallback = defaultLayout(widgets);
     return widgets.map((w, i) => saved.get(w.id) ?? fallback[i]);
   }, [widgets, layout]);
+
+  // Read-only views stack on narrow screens: a 12-column grid squeezes charts past the edge.
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const update = () => setNarrow(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  if (!editable && narrow) {
+    const order = [...effectiveLayout].sort((a, b) => a.y - b.y || a.x - b.x);
+    const byId = new Map(widgets.map((w) => [w.id, w]));
+    return (
+      <div className="grid gap-4">
+        {order.map((l) => {
+          const widget = byId.get(l.i);
+          if (!widget) return null;
+          return (
+            <div key={l.i} style={{ height: Math.max(l.h, 2) * ROW_HEIGHT }}>
+              <WidgetRenderer widget={widget} />
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <ReactGridLayout

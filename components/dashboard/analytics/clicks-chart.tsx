@@ -9,86 +9,70 @@ import {
     XAxis,
     YAxis,
 } from "recharts"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatDate } from "@/lib/utils"
+import { cn } from "@/lib/utils"
+import { DEFAULT_COLORS, AXIS_TEXT, GRID_LINE, SURFACE } from "@/components/dashboard/widgets/palette"
 
 interface ClicksChartProps {
     data: { date: string; clicks: number }[]
+    className?: string
 }
 
-export function ClicksChart({ data }: ClicksChartProps) {
-    if (!data || data.length === 0) {
-        return (
-            <Card className="col-span-4">
-                <CardHeader>
-                    <CardTitle>Clicks Over Time</CardTitle>
-                </CardHeader>
-                <CardContent className="pl-2">
-                    <div className="h-[350px] flex items-center justify-center text-muted-foreground">
-                        No data available
-                    </div>
-                </CardContent>
-            </Card>
-        )
-    }
+const SERIES = DEFAULT_COLORS[0]
+const tick = { fontSize: 12, fill: AXIS_TEXT }
 
-    // Sort data by date
-    const chartData = [...data]
+export function ClicksChart({ data, className }: ClicksChartProps) {
+    const chartData = [...(data || [])]
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .map(item => ({
+        .map((item) => ({
             ...item,
-            formattedDate: new Date(item.date).toLocaleDateString(),
-            clicks: Number(item.clicks)
+            formattedDate: new Date(item.date).toLocaleDateString("id-ID", { day: "numeric", month: "short" }),
+            clicks: Number(item.clicks),
         }))
 
     return (
-        <Card className="col-span-4">
-            <CardHeader>
-                <CardTitle>Clicks Over Time</CardTitle>
-            </CardHeader>
-            <CardContent className="pl-2">
-                <div className="h-[350px] w-full">
+        <section className={cn("rounded-lg border bg-card p-5", className)}>
+            <h2 className="font-medium">Clicks over time</h2>
+            {chartData.length === 0 ? (
+                <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">No data available</div>
+            ) : chartData.length === 1 ? (
+                // One day is a figure, not a trend: a lone point on an axis reads as nothing.
+                <div className="flex h-[280px] flex-col justify-center">
+                    <p className="text-4xl font-semibold tracking-tight tabular-nums">{chartData[0].clicks.toLocaleString("id-ID")}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">clicks on {chartData[0].formattedDate}. The trend appears once there are two days of data.</p>
+                </div>
+            ) : (
+                <div className="mt-4 h-[280px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData}>
-                            <defs>
-                                <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <XAxis
-                                dataKey="formattedDate"
-                                stroke="#888888"
-                                fontSize={12}
-                                tickLine={false}
-                                axisLine={false}
-                            />
-                            <YAxis
-                                stroke="#888888"
-                                fontSize={12}
-                                tickLine={false}
-                                axisLine={false}
-                                tickFormatter={(value: number) => `${value}`}
-                            />
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                            <CartesianGrid stroke={GRID_LINE} vertical={false} />
+                            <XAxis dataKey="formattedDate" tick={tick} tickLine={false} axisLine={{ stroke: GRID_LINE }} minTickGap={24} />
+                            <YAxis allowDecimals={false} tick={tick} tickLine={false} axisLine={false} />
                             <Tooltip
+                                cursor={{ stroke: AXIS_TEXT, strokeDasharray: "3 3" }}
                                 contentStyle={{
-                                    backgroundColor: "hsl(var(--background))",
+                                    backgroundColor: "hsl(var(--popover))",
                                     border: "1px solid hsl(var(--border))",
+                                    borderRadius: 8,
+                                    fontSize: 12,
                                 }}
                                 itemStyle={{ color: "hsl(var(--foreground))" }}
                             />
                             <Area
                                 type="monotone"
                                 dataKey="clicks"
-                                stroke="#8884d8"
-                                fillOpacity={1}
-                                fill="url(#colorClicks)"
+                                name="Clicks"
+                                stroke={SERIES}
+                                strokeWidth={2}
+                                fill={SERIES}
+                                fillOpacity={0.08}
+                                dot={false}
+                                activeDot={{ r: 5, stroke: SURFACE, strokeWidth: 2 }}
+                                isAnimationActive={false}
                             />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
-            </CardContent>
-        </Card>
+            )}
+        </section>
     )
 }

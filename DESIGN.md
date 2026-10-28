@@ -40,6 +40,14 @@ Font: Plus Jakarta Sans via `next/font` (`--font-sans`), one family everywhere, 
 - Sub-navigation (form editor, responses): underline tabs (`tabUnderline` in `components/ui/tabs.tsx`); sibling pages sit in the same strip as links.
 - No card inside a card: groups inside a card are separated by a top rule.
 
+## Data
+- Figures: a stat strip (one bordered row, label, figure in tabular numerals, one-line note), never a row of icon cards. A label says what the number is ("Clicks per link", not "Avg CTR").
+- Breakdowns with a handful of categories (sources, devices, browsers, systems, top links): `RankedList`, a label, a single-hue bar scaled to the share, the count and the percentage.
+- Charts: `--chart-1..8` / `components/dashboard/widgets/palette.ts`, the dataviz reference palette, validated on #fff (light) and #0a0a0a (dark). One variable is one hue (slot 1, blue); categorical slots go in fixed order and a ninth category is grey "other", never a cycled hue. Bars run horizontal when labels are words; direct value labels; 2px surface gap between pie slices. One day of data is shown as a figure, not a one-point chart.
+
+## Bio themes
+- `panrb` (neutral paper, ink, PANRB red buttons) is the default for new bio pages and the fallback for unknown themes. Existing presets stay as users chose them; panels take each theme's `cardBackground`, focus rings take its text colour.
+
 ## Motion
 - Character: brisk. Colour and transform only, 120 to 220ms; `motion-reduce` stops spinners and the press nudge.
 

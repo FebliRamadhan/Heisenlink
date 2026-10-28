@@ -39,7 +39,7 @@ export const getOrCreateBioPage = async (userId) => {
                 slug: user.username.toLowerCase(),
                 title: user.displayName || user.username,
                 avatarUrl: user.avatarUrl,
-                theme: 'gradient',
+                theme: 'panrb',
                 isPublished: false,
             },
             include: {

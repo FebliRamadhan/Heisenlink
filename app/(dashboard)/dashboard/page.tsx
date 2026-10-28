@@ -3,7 +3,8 @@
 import { useQuery } from "@tanstack/react-query"
 import api from "@/lib/api"
 import { OverviewStats } from "@/components/dashboard/overview-stats"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { RankedList } from "@/components/dashboard/analytics/ranked-list"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus } from "lucide-react"
@@ -20,23 +21,20 @@ export default function DashboardPage() {
 
     return (
         <div className="mx-auto w-full max-w-6xl space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-                <div className="flex items-center space-x-2">
-                    <Link href="/dashboard/links/new">
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" /> Create Link
-                        </Button>
-                    </Link>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
+                    <p className="mt-1 text-sm text-muted-foreground">Your links and how often they are opened.</p>
                 </div>
+                <Button asChild>
+                    <Link href="/dashboard/links/new">
+                        <Plus className="mr-2 h-4 w-4" /> Create Link
+                    </Link>
+                </Button>
             </div>
 
             {isLoading ? (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    {[...Array(4)].map((_, i) => (
-                        <Card key={i} className="animate-pulse motion-reduce:animate-none h-32" />
-                    ))}
-                </div>
+                <Skeleton className="h-[108px] w-full rounded-lg" />
             ) : (
                 <OverviewStats
                     totalLinks={analytics?.totalLinks}
@@ -45,36 +43,27 @@ export default function DashboardPage() {
                 />
             )}
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <ClicksChart data={analytics?.clicksByDay || []} />
-
-                <Card className="col-span-3">
-                    <CardHeader>
-                        <CardTitle>Top Links</CardTitle>
-                        <CardDescription>
-                            Your most visited links
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {analytics?.topLinks?.map((link: any) => (
-                                <div key={link.id} className="flex items-center">
-                                    <div className="ml-4 space-y-1">
-                                        <p className="text-sm font-medium leading-none">{link.title || link.code}</p>
-                                        <p className="text-xs text-muted-foreground">{link.shortUrl}</p>
-                                    </div>
-                                    <div className="ml-auto font-medium">+{link.clickCount}</div>
-                                </div>
-                            ))}
-                            {!analytics?.topLinks?.length && (
-                                <p className="text-sm text-muted-foreground text-center py-4">
-                                    No links created yet
-                                </p>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+            <div className="grid gap-4 lg:grid-cols-12">
+                <ClicksChart data={analytics?.clicksByDay || []} className="lg:col-span-7" />
+                <RankedList
+                    title="Top links"
+                    description="By clicks"
+                    className="lg:col-span-5"
+                    empty="No links created yet"
+                    items={(analytics?.topLinks || []).map((link: any) => ({
+                        key: link.id,
+                        label: link.title || link.code,
+                        sublabel: `/${link.code}`,
+                        value: Number(link.clickCount) || 0,
+                        href: `/dashboard/links/${link.id}`,
+                    }))}
+                    footer={
+                        <Link href="/dashboard/links" className="rounded-sm text-muted-foreground hover:text-foreground hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                            All links
+                        </Link>
+                    }
+                />
             </div>
-        </div >
+        </div>
     )
 }

@@ -3,6 +3,18 @@
 // ===========================================
 
 export const themes = {
+    // The ministry's own: neutral paper, ink type, PANRB red (sampled from logo-panrb.png).
+    panrb: {
+        id: 'panrb',
+        name: 'PANRB',
+        background: '#f5f5f5',
+        cardBackground: '#ffffff',
+        text: '#0a0a0a',
+        textSecondary: '#525252',
+        buttonBg: '#b32a2c',
+        buttonText: '#ffffff',
+        buttonHover: '#962224',
+    },
     light: {
         id: 'light',
         name: 'Light',
@@ -156,7 +168,7 @@ export const themes = {
  * @returns {object|null}
  */
 export const getTheme = (themeId) => {
-    return themes[themeId] || themes.gradient;
+    return themes[themeId] || themes.panrb;
 };
 
 /**

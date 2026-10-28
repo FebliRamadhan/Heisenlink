@@ -22,8 +22,8 @@ export const KpiWidget = ({
   data,
   aggregation,
 }: SimpleProps & { aggregation: WidgetAggregation }) => (
-  <div className="flex h-full min-h-[120px] flex-col items-center justify-center">
-    <div className="text-4xl font-bold tabular-nums">
+  <div className="flex h-full min-h-[96px] flex-col justify-center">
+    <div className="text-4xl font-semibold tracking-tight tabular-nums">
       {formatMetric(data.value)}
     </div>
     <div className="mt-1 text-sm text-muted-foreground">
@@ -36,7 +36,7 @@ export const TableWidget = ({ data }: SimpleProps) => {
   if (data.redacted) {
     return (
       <div className="flex h-full min-h-[120px] flex-col items-center justify-center gap-2 text-center text-sm text-muted-foreground">
-        <Lock className="h-5 w-5" />
+        <Lock className="h-5 w-5" aria-hidden="true" />
         <span>
           {data.totalAnswered ?? 0} responses hidden to protect respondent
           privacy
@@ -53,9 +53,9 @@ export const TableWidget = ({ data }: SimpleProps) => {
     );
   }
   return (
-    <ul className="max-h-full space-y-1 overflow-auto pr-1 text-sm">
+    <ul className="max-h-full divide-y overflow-auto pr-1 text-sm">
       {rows.map((row, i) => (
-        <li key={i} className="rounded border bg-muted/40 px-2 py-1">
+        <li key={i} className="py-1.5">
           {row}
         </li>
       ))}
